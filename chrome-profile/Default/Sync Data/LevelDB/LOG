@@ -1,5 +1,0 @@
-2026/05/23-13:52:02.480 23101 Creating DB /Users/albertangan/Documents/AG Proj Parking Extreme Cheap/chrome-profile/Default/Sync Data/LevelDB since it was missing.
-2026/05/23-13:52:02.484 23101 Reusing MANIFEST /Users/albertangan/Documents/AG Proj Parking Extreme Cheap/chrome-profile/Default/Sync Data/LevelDB/MANIFEST-000001
-2026/05/23-14:27:34.401 23102 Level-0 table #5: started
-2026/05/23-14:27:34.407 23102 Level-0 table #5: 174079 bytes OK
-2026/05/23-14:27:34.408 23102 Delete type=0 #3

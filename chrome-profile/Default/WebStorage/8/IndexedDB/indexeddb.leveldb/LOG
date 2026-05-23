@@ -1,7 +1,0 @@
-2026/05/23-14:11:33.327 230f1 Reusing MANIFEST /Users/albertangan/Documents/AG Proj Parking Extreme Cheap/chrome-profile/Default/WebStorage/8/IndexedDB/indexeddb.leveldb/MANIFEST-000001
-2026/05/23-14:11:33.329 230f1 Recovering log #3
-2026/05/23-14:11:33.329 230f1 Reusing old log /Users/albertangan/Documents/AG Proj Parking Extreme Cheap/chrome-profile/Default/WebStorage/8/IndexedDB/indexeddb.leveldb/000003.log 
-2026/05/23-14:44:36.359 230ef Level-0 table #5: started
-2026/05/23-14:44:36.362 230ef Level-0 table #5: 29532 bytes OK
-2026/05/23-14:44:36.367 230ef Delete type=0 #3
-2026/05/23-14:44:36.369 230ef Manual compaction at level-0 from (begin) .. (end); will stop at (end)
