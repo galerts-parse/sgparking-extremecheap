@@ -30,6 +30,39 @@
   <!-- Core App Grid Container -->
   <div class="app-container">
     
+
+    <!-- MOBILE FLOATING SEARCH OVERLAY (visible on phones, hidden on desktop via CSS) -->
+    <div class="mobile-search-overlay" id="mobile-search-overlay">
+      <div class="mobile-search-bar">
+        <i class="fas fa-search mobile-search-icon"></i>
+        <input
+          type="text"
+          id="mobile-search-input"
+          class="mobile-search-input"
+          placeholder="Search Singapore location..."
+          autocomplete="off"
+        >
+        <button id="mobile-search-clear-btn" class="mobile-search-clear" style="display:none;" type="button" title="Clear">&times;</button>
+        <button id="mobile-gps-btn" class="mobile-gps-btn" title="Use my GPS location">
+          <i class="fas fa-location-arrow"></i>
+        </button>
+      </div>
+      <!-- Duration + Arrival time compact controls for mobile -->
+      <div id="mobile-params" style="display:none; background:rgba(255,255,255,0.96); border:1px solid var(--border-light); border-radius:14px; margin-top:8px; padding:10px 12px; box-shadow:0 4px 16px rgba(15,23,42,0.10); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);">
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"><i class="far fa-clock"></i> Stay:</span>
+          <input type="range" id="mobile-duration-slider" min="30" max="480" step="30" value="120" style="flex:1; min-width:80px; height:4px; accent-color:var(--primary);">
+          <span id="mobile-duration-value" style="font-size:13px; font-weight:700; color:var(--primary); white-space:nowrap;">2h</span>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+          <span style="font-size:12px; font-weight:600; color:var(--text-secondary); white-space:nowrap;"><i class="far fa-calendar-alt"></i></span>
+          <input type="date" id="mobile-arrival-date" style="flex:1; border:1px solid var(--border-light); border-radius:8px; padding:6px 8px; font-size:12px; font-family:var(--font-family); color:var(--text-primary); background:#fff; outline:none;">
+          <input type="time" id="mobile-arrival-time" style="flex:1; border:1px solid var(--border-light); border-radius:8px; padding:6px 8px; font-size:12px; font-family:var(--font-family); color:var(--text-primary); background:#fff; outline:none;">
+        </div>
+      </div>
+      <div id="mobile-autocomplete" class="mobile-autocomplete autocomplete-dropdown"></div>
+    </div>
+
     <!-- DESKTOP SIDEBAR PANEL -->
     <aside class="sidebar glass-panel">
       <div class="drawer-handle mobile-only"></div>

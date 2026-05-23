@@ -203,209 +203,195 @@ function updateGPSMarker(lat, lng, center) {
 
 // Setup DOM Event Listeners
 function setupEventListeners() {
-  // Navigation Tabs
+  // Navigation Tabs (desktop only)
   const searchTabBtn = document.getElementById('tab-search');
-  const savedTabBtn = document.getElementById('tab-saved');
-  const searchSection = document.getElementById('section-search');
-  const savedSection = document.getElementById('section-saved');
-
+  const savedTabBtn  = document.getElementById('tab-saved');
   if (searchTabBtn && savedTabBtn) {
     searchTabBtn.addEventListener('click', () => switchTab('search'));
-    savedTabBtn.addEventListener('click', () => switchTab('saved'));
+    savedTabBtn.addEventListener('click',  () => switchTab('saved'));
   }
 
-  // Duration Slider
+  // Helper to format duration
+  const fmtDur = (mins) => formatDurationDisplay(mins);
+
+  // Desktop Duration Slider
   const durationSlider = document.getElementById('duration-slider');
-  const durationValue = document.getElementById('duration-value');
+  const durationValue  = document.getElementById('duration-value');
   if (durationSlider && durationValue) {
     durationSlider.addEventListener('input', (e) => {
       state.duration = parseInt(e.target.value);
-      durationValue.textContent = formatDurationDisplay(state.duration);
+      durationValue.textContent = fmtDur(state.duration);
+      const mSlider = document.getElementById('mobile-duration-slider');
+      const mVal    = document.getElementById('mobile-duration-value');
+      if (mSlider) mSlider.value = state.duration;
+      if (mVal)    mVal.textContent = fmtDur(state.duration);
       if (state.destination) performCalculation();
     });
   }
 
-  // Date and Time inputs
+  // Mobile Duration Slider
+  const mobileDurationSlider = document.getElementById('mobile-duration-slider');
+  const mobileDurationValue  = document.getElementById('mobile-duration-value');
+  if (mobileDurationSlider) {
+    mobileDurationSlider.addEventListener('input', (e) => {
+      state.duration = parseInt(e.target.value);
+      if (mobileDurationValue) mobileDurationValue.textContent = fmtDur(state.duration);
+      if (durationSlider) durationSlider.value = state.duration;
+      if (durationValue)  durationValue.textContent = fmtDur(state.duration);
+      if (state.destination) performCalculation();
+    });
+  }
+
+  // Desktop Date / Time inputs
   const dateInput = document.getElementById('arrival-date');
   const timeInput = document.getElementById('arrival-time');
-  const updateTimeInputs = () => {
-    if (dateInput.value && timeInput.value) {
-      state.arrivalTime = new Date(`${dateInput.value}T${timeInput.value}`);
+  const syncTime = (d, t) => {
+    if (d && t) {
+      state.arrivalTime = new Date(`${d}T${t}`);
       if (state.destination) performCalculation();
     }
   };
   if (dateInput && timeInput) {
-    dateInput.addEventListener('change', updateTimeInputs);
-    timeInput.addEventListener('change', updateTimeInputs);
+    dateInput.addEventListener('change', () => syncTime(dateInput.value, timeInput.value));
+    timeInput.addEventListener('change', () => syncTime(dateInput.value, timeInput.value));
   }
 
-  // Location Search & Autocomplete
+  // Mobile Date / Time inputs
+  const mobileDateInput = document.getElementById('mobile-arrival-date');
+  const mobileTimeInput = document.getElementById('mobile-arrival-time');
+  if (mobileDateInput) {
+    // Initialise to today
+    const now = new Date();
+    mobileDateInput.value = now.toISOString().split('T')[0];
+    if (mobileTimeInput) {
+      mobileTimeInput.value = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    }
+    mobileDateInput.addEventListener('change', () => syncTime(mobileDateInput.value, mobileTimeInput && mobileTimeInput.value));
+  }
+  if (mobileTimeInput) {
+    mobileTimeInput.addEventListener('change', () => syncTime(mobileDateInput && mobileDateInput.value, mobileTimeInput.value));
+  }
+
+  // Desktop Search & Autocomplete
   const searchInput = document.getElementById('search-input');
   if (searchInput) setupSearchAutocomplete(searchInput, 'desktop-autocomplete');
 
-  // GPS inside search
+  // Mobile Search & Autocomplete
+  const mobileSearchInput = document.getElementById('mobile-search-input');
+  if (mobileSearchInput) setupSearchAutocomplete(mobileSearchInput, 'mobile-autocomplete');
+
+  // GPS buttons
   const searchGpsBtn = document.getElementById('search-gps-btn');
-  if (searchGpsBtn) {
-    searchGpsBtn.addEventListener('click', () => triggerGeolocation(true));
-  }
+  if (searchGpsBtn) searchGpsBtn.addEventListener('click', () => triggerGeolocation(true));
+  const mobileGpsBtn = document.getElementById('mobile-gps-btn');
+  if (mobileGpsBtn) mobileGpsBtn.addEventListener('click', () => triggerGeolocation(true));
 
   // Sort Buttons
-  const sortPrice = document.getElementById('sort-price');
+  const sortPrice    = document.getElementById('sort-price');
   const sortDistance = document.getElementById('sort-distance');
-  const sortSmart = document.getElementById('sort-smart');
-
+  const sortSmart    = document.getElementById('sort-smart');
   const setSort = (key, btn) => {
     state.sortKey = key;
     document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     renderCarparkList();
   };
-
-  if (sortPrice) sortPrice.addEventListener('click', (e) => setSort('price', e.target));
+  if (sortPrice)    sortPrice.addEventListener('click',    (e) => setSort('price',    e.target));
   if (sortDistance) sortDistance.addEventListener('click', (e) => setSort('distance', e.target));
-  if (sortSmart) sortSmart.addEventListener('click', (e) => setSort('smart', e.target));
+  if (sortSmart)    sortSmart.addEventListener('click',    (e) => setSort('smart',    e.target));
 
-  // Clear Search button click triggers
+  // Clear Search
   const desktopClearBtn = document.getElementById('search-clear-btn');
-  const mobileClearBtn = document.getElementById('mobile-search-clear-btn');
-  
+  const mobileClearBtn  = document.getElementById('mobile-search-clear-btn');
+
   const clearSearch = (inputEl, clearBtnEl) => {
-    inputEl.value = '';
-    clearBtnEl.style.display = 'none';
-    
-    // Clear state
-    state.destination = null;
+    if (inputEl)    inputEl.value = '';
+    if (clearBtnEl) clearBtnEl.style.display = 'none';
+    state.destination   = null;
     state.searchResults = [];
-    
-    // Clear destination marker
-    if (state.destMarker) {
-      state.map.removeLayer(state.destMarker);
-      state.destMarker = null;
-    }
-    
-    // Clear results markers
+    if (state.destMarker) { state.map.removeLayer(state.destMarker); state.destMarker = null; }
     state.markers.forEach(m => state.map.removeLayer(m));
     state.markers = [];
-    
-    // Reset list rendering to empty state
     renderCarparkList();
-    
-    // Collapse mobile drawer
-    const mDrawer = document.querySelector('.mobile-drawer');
-    if (mDrawer) mDrawer.classList.remove('expanded');
-    
-    // Reset map view
+    // Collapse sidebar on mobile
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.classList.remove('expanded');
+    const mParams = document.getElementById('mobile-params');
+    if (mParams) mParams.style.display = 'none';
     if (state.userLocation) {
       state.map.setView([state.userLocation.lat, state.userLocation.lng], 15);
     } else {
       state.map.setView([1.3521, 103.8198], 12);
     }
   };
-  
+
   if (desktopClearBtn) {
-    desktopClearBtn.addEventListener('click', () => {
-      clearSearch(document.getElementById('search-input'), desktopClearBtn);
-    });
+    desktopClearBtn.addEventListener('click', () =>
+      clearSearch(document.getElementById('search-input'), desktopClearBtn)
+    );
   }
-  
   if (mobileClearBtn) {
-    mobileClearBtn.addEventListener('click', () => {
-      clearSearch(document.getElementById('mobile-search-input'), mobileClearBtn);
-    });
+    mobileClearBtn.addEventListener('click', () =>
+      clearSearch(document.getElementById('mobile-search-input'), mobileClearBtn)
+    );
   }
 
-  // Mobile drawer collapse/expand and drag gesture implementation
-  const drawer = document.querySelector('.mobile-drawer');
+  // Mobile Bottom Drawer drag gesture
+  // NOTE: The .sidebar IS the mobile drawer — previous code targeted non-existent .mobile-drawer.
+  const drawer       = document.querySelector('.sidebar');
   const drawerHandle = document.querySelector('.drawer-handle');
-  const drawerHeader = document.querySelector('.mobile-drawer div'); // First div inside drawer is header
-  
-  const toggleDrawer = () => {
-    if (drawer) drawer.classList.toggle('expanded');
-  };
-  
-  if (drawerHandle) drawerHandle.addEventListener('click', toggleDrawer);
-  if (drawerHeader) drawerHeader.addEventListener('click', toggleDrawer);
 
-  // Swipe/Drag gesture handler for mobile bottom sheet
+  const toggleDrawer = () => { if (drawer) drawer.classList.toggle('expanded'); };
+  if (drawerHandle) drawerHandle.addEventListener('click', toggleDrawer);
+
   if (drawer) {
-    let startY = 0;
-    let currentY = 0;
-    let isDragging = false;
-    const threshold = 60; // drag threshold in pixels to expand/collapse
-    
+    let startY = 0, currentY = 0, isDragging = false;
+    const threshold = 50;
+
     const handleTouchStart = (e) => {
-      // Only drag from handle, header or if we are at the top of scroll in the carpark list
-      const target = e.target;
-      const isScrollable = target.closest('#mobile-carpark-results');
-      if (isScrollable && isScrollable.scrollTop > 0 && drawer.classList.contains('expanded')) {
-        return; // Allow standard scrolling inside the list
-      }
-      
+      const isScrollable = e.target.closest('.carpark-list');
+      if (isScrollable && isScrollable.scrollTop > 0 && drawer.classList.contains('expanded')) return;
       startY = e.touches[0].clientY;
       currentY = startY;
       isDragging = true;
-      drawer.style.transition = 'none'; // Disable transition for 1:1 real-time drag tracking
+      drawer.style.transition = 'none';
     };
-    
+
     const handleTouchMove = (e) => {
       if (!isDragging) return;
       currentY = e.touches[0].clientY;
-      const diffY = currentY - startY;
-      
-      // Calculate active displacement
+      const diffY      = currentY - startY;
       const isExpanded = drawer.classList.contains('expanded');
+      const drawerH    = drawer.offsetHeight;
       let offset = 0;
-      
       if (isExpanded) {
-        // Dragging down from expanded (positive diffY)
         offset = Math.max(0, diffY);
       } else {
-        // Dragging up from collapsed (negative diffY)
-        // Collapsed state offset from the bottom is window height minus 60px header
-        const drawerHeight = window.innerHeight * 0.6; // 60vh
-        const collapsedOffset = drawerHeight - 60;
-        offset = collapsedOffset + diffY;
-        offset = Math.max(0, Math.min(collapsedOffset, offset));
+        const collapsedOffset = drawerH - 20;
+        offset = Math.max(0, Math.min(collapsedOffset, collapsedOffset + diffY));
       }
-      
       drawer.style.transform = `translateY(${offset}px)`;
     };
-    
-    const handleTouchEnd = (e) => {
+
+    const handleTouchEnd = () => {
       if (!isDragging) return;
       isDragging = false;
-      drawer.style.transition = ''; // Restore smooth CSS transitions
-      
-      const diffY = currentY - startY;
+      drawer.style.transition = '';
+      drawer.style.transform  = '';
+      const diffY      = currentY - startY;
       const isExpanded = drawer.classList.contains('expanded');
-      
-      // Remove temporary inline transform so class-based transform applies
-      drawer.style.transform = '';
-      
-      if (isExpanded) {
-        // If dragged down past threshold, collapse it
-        if (diffY > threshold) {
-          drawer.classList.remove('expanded');
-        }
-      } else {
-        // If dragged up past threshold, expand it
-        if (diffY < -threshold) {
-          drawer.classList.add('expanded');
-        }
-      }
+      if (isExpanded  && diffY >  threshold) drawer.classList.remove('expanded');
+      if (!isExpanded && diffY < -threshold) drawer.classList.add('expanded');
     };
-    
-    // Add touch listeners to handle and header
+
     if (drawerHandle) {
       drawerHandle.addEventListener('touchstart', handleTouchStart, { passive: true });
-      drawerHandle.addEventListener('touchmove', handleTouchMove, { passive: true });
-      drawerHandle.addEventListener('touchend', handleTouchEnd, { passive: true });
+      drawerHandle.addEventListener('touchmove',  handleTouchMove,  { passive: true });
+      drawerHandle.addEventListener('touchend',   handleTouchEnd,   { passive: true });
     }
-    if (drawerHeader) {
-      drawerHeader.addEventListener('touchstart', handleTouchStart, { passive: true });
-      drawerHeader.addEventListener('touchmove', handleTouchMove, { passive: true });
-      drawerHeader.addEventListener('touchend', handleTouchEnd, { passive: true });
-    }
+    drawer.addEventListener('touchstart', handleTouchStart, { passive: true });
+    drawer.addEventListener('touchmove',  handleTouchMove,  { passive: true });
+    drawer.addEventListener('touchend',   handleTouchEnd,   { passive: true });
   }
 
   // Add Saved Location Form
@@ -413,19 +399,17 @@ function setupEventListeners() {
   if (savedForm) {
     savedForm.addEventListener('submit', (e) => {
       e.preventDefault();
-      const labelInput = document.getElementById('saved-label');
+      const labelInput   = document.getElementById('saved-label');
       const addressInput = document.getElementById('saved-address-search');
-      
-      // Perform simple geocode for saved location
       if (labelInput.value && addressInput.value) {
         geocodeAddress(addressInput.value, (result) => {
           if (result) {
             addSavedLocation(labelInput.value, addressInput.value, result.lat, result.lng);
-            labelInput.value = '';
+            labelInput.value   = '';
             addressInput.value = '';
-            alert(`Location saved successfully!`);
+            alert('Location saved successfully!');
           } else {
-            alert("Could not geocode saved address. Please try another Singapore landmark.");
+            alert('Could not geocode saved address. Please try another Singapore landmark.');
           }
         });
       }
@@ -436,6 +420,7 @@ function setupEventListeners() {
 // Switch navigation tabs
 function switchTab(tab) {
   state.activeTab = tab;
+
   
   const searchTabBtn = document.getElementById('tab-search');
   const savedTabBtn = document.getElementById('tab-saved');
@@ -499,10 +484,11 @@ function setupSearchAutocomplete(inputEl, dropdownId) {
     const query = e.target.value.trim();
     clearTimeout(debounceTimer);
 
-    // Show/hide clear button on typing
-    if (clearBtn && clearBtn.classList.contains('search-clear-btn')) {
+    // Show/hide clear button on typing (handles both desktop and mobile clear buttons)
+    if (clearBtn && (clearBtn.classList.contains('search-clear-btn') || clearBtn.classList.contains('mobile-search-clear'))) {
       clearBtn.style.display = query.length > 0 ? 'flex' : 'none';
     }
+
 
     // Google Maps Link Pasteur Parser Check
     if (query.startsWith('http') || query.includes('maps.')) {
@@ -872,6 +858,11 @@ function renderCarparkList() {
   if (!container) return;
   container.innerHTML = '';
 
+  // Auto-expand/collapse mobile drawer based on results
+  const sidebar = document.querySelector('.sidebar');
+  const mParams = document.getElementById('mobile-params');
+  const isMobile = window.innerWidth <= 768;
+
   if (state.searchResults.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
@@ -880,8 +871,17 @@ function renderCarparkList() {
       </div>
     `;
     if (countEl) countEl.textContent = '0 SPOTS FOUND';
+    // Collapse drawer on mobile when empty
+    if (isMobile && sidebar) sidebar.classList.remove('expanded');
+    if (mParams) mParams.style.display = 'none';
     return;
   }
+
+  // Results found — expand drawer and show params on mobile
+  if (isMobile && sidebar) sidebar.classList.add('expanded');
+  if (isMobile && mParams) mParams.style.display = 'block';
+
+
 
   // Sort search results
   let sorted = [...state.searchResults];
