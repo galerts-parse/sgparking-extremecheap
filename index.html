@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SG ParkExtreme Cheap — Cheapest Singapore Parking Finder</title>
+  
+  <!-- SEO & Mobile Optimization -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="Find the absolute cheapest parking near your destination in Singapore. Compares HDB, URA, and shopping mall prices in real-time. Standalone iPhone installable webapp.">
+  <meta name="keywords" content="Singapore, parking, cheapest parking, HDB parking, mall parking, Singapore driver, SG carpark rates">
+  <meta name="author" content="SG ParkExtreme Cheap">
+  
+  <!-- iOS Standalone App Features (PWA) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SG ParkCheap">
+  <link rel="apple-touch-icon" href="https://placehold.co/180x180/6366f1/ffffff?text=P">
+  
+  <!-- Leaflet Interactive Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Font Awesome Premium Iconography -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  
+  <!-- Premium Custom Styling System -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Core App Grid Container -->
+  <div class="app-container">
+    
+    <!-- DESKTOP SIDEBAR PANEL -->
+    <aside class="sidebar glass-panel">
+      <div class="drawer-handle mobile-only"></div>
+      <!-- Title Branding Header -->
+      <header class="app-header">
+        <div class="app-title-group">
+          <div class="logo-icon"><i class="fas fa-parking"></i></div>
+          <div>
+            <h1 class="app-title">ParkExtreme</h1>
+            <div class="app-subtitle">Singapore's Cheapest</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="search-gps-btn" class="action-btn" title="Locate Me via GPS"><i class="fas fa-location-arrow"></i></button>
+        </div>
+      </header>
+      
+      <!-- Tab Navigation Navigation -->
+      <nav class="nav-tabs">
+        <button id="tab-search" class="tab-btn active"><i class="fas fa-search"></i> Search</button>
+        <button id="tab-saved" class="tab-btn"><i class="fas fa-bookmark"></i> Saved Places</button>
+      </nav>
+      
+      <!-- Scrolling Panel Content -->
+      <div class="panel-content">
+        
+        <!-- SECTION 1: SEARCH & CALCULATIONS -->
+        <section id="section-search" class="content-section active">
+          <!-- Inputs & Parameter Sliders -->
+          <div class="controls-container">
+            <!-- Floating Autocomplete Search input -->
+            <div class="search-wrapper">
+              <span class="search-icon-inside"><i class="fas fa-search"></i></span>
+              <input type="text" id="search-input" class="search-input" placeholder="Search Singapore landmark, postal code..." autocomplete="off">
+              <button id="search-clear-btn" class="search-clear-btn" style="display: none;" type="button" title="Clear search">&times;</button>
+              <div id="desktop-autocomplete" class="autocomplete-dropdown"></div>
+            </div>
+            
+            <!-- Stay Duration Slider -->
+            <div class="param-card">
+              <div class="param-header">
+                <span class="param-label"><i class="far fa-clock"></i> Duration of Stay</span>
+                <span id="duration-value" class="param-value">2h</span>
+              </div>
+              <input type="range" id="duration-slider" class="slider-input" min="30" max="480" step="30" value="120">
+            </div>
+            
+            <!-- Arrival DateTime Pickers -->
+            <div class="param-card">
+              <span class="param-label"><i class="far fa-calendar-alt"></i> Arrival Date & Time</span>
+              <div class="datetime-grid">
+                <input type="date" id="arrival-date" class="datetime-input">
+                <input type="time" id="arrival-time" class="datetime-input">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Results list toolbar (Sorting toggles) -->
+          <div class="list-toolbar">
+            <span id="results-count-text" class="results-count">0 SPOTS FOUND</span>
+            <div class="sort-selector">
+              <button id="sort-price" class="sort-btn active">Cheapest</button>
+              <button id="sort-distance" class="sort-btn">Closest</button>
+              <button id="sort-smart" class="sort-btn">Smart Match</button>
+            </div>
+          </div>
+          
+          <!-- Nearby Carparks List container -->
+          <div id="carpark-results" class="carpark-list">
+            <div class="empty-state">
+              <div class="empty-icon"><i class="fas fa-search-location"></i></div>
+              <p class="empty-text">Input a Singapore destination above to instantly scan and display the cheapest parking nearby!</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION 2: SAVED LOCATIONS -->
+        <section id="section-saved" class="content-section">
+          <div class="saved-container">
+            <!-- Add new location manual form -->
+            <form id="add-saved-form-element" class="add-saved-form">
+              <span class="add-saved-title"><i class="fas fa-plus"></i> Save Frequent Destination</span>
+              <div class="form-group">
+                <label class="form-label" for="saved-label">Label Name</label>
+                <input type="text" id="saved-label" class="form-input" placeholder="e.g., Work, Partner's Place, Gym" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="saved-address-search">Address or Building</label>
+                <input type="text" id="saved-address-search" class="form-input" placeholder="e.g., 313 Somerset, 608549" required>
+              </div>
+              <button type="submit" class="save-btn"><i class="fas fa-save"></i> Save Landmark</button>
+            </form>
+            
+            <!-- List of saved locations -->
+            <div id="saved-list-container" class="saved-list">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </section>
+        
+      </div>
+    </aside>
+    
+    <!-- INTERACTIVE MAP VIEWPORT -->
+    <main class="map-viewport">
+      
+      <!-- Interactive Leaflet Map Div -->
+      <div id="map"></div>
+      
+    </main>
+    
+  </div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Application JS Modules -->
+  <script src="data/hdb_carparks.js"></script>
+  <script src="data/commercial_carparks.js"></script>
+  <script src="pricing.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

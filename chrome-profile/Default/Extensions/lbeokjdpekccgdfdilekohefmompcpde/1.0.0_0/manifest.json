@@ -1,0 +1,20 @@
+{
+   "description": "The Default Chrome theme, but it doesn't change tab color when the window is unfocused.",
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi8iRFu/P9xifJ36w05TJLXCa4bQ7/nW7kbqfonoH+hsCe3XAhu6gVnNJRkuSmWBweuGn1lPCddJaXOj3Uc2bSQA9j88uJ7AI/KeMDF6aDDAgI1Zo4VMumPPlkX13E0dE3HFwHk11se+HgDdzogFL8PGKNWmer04afb1B3E5mejtOFh0eYukC6m5yMA2i2FHkdfqeEfVUc5qBaqrAn4Wy/BXojy112ybJbmGOtnKDYvwVoXN4vgWq09BAEkCq8DJXzhrljgAzqs6OoPAmKKXCAzwbJyDn2LHxcjhnODS/HDx44Uv7Oc+IsYllBZ8eY+NB70nXTjgZT2EBVCTb3z9gTQIDAQAB",
+   "manifest_version": 3,
+   "name": "Maintain tab color when unfocused",
+   "theme": {
+      "colors": {
+         "background_tab_inactive": [ 222, 225, 230 ],
+         "frame_inactive": [ 222, 225, 230 ]
+      },
+      "images": {
+      },
+      "properties": {
+      },
+      "tints": {
+      }
+   },
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "version": "1.0.0"
+}
