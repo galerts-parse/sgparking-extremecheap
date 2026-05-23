@@ -49,6 +49,41 @@ function formatWalkingTime(meters) {
   return `${mins} min${mins > 1 ? 's' : ''}`;
 }
 
+// Helper: Build a human-readable rate description for the popup / card.
+// Prefers rates_text (scraped verbatim from SGCarMart), otherwise
+// auto-generates a summary from the structured rates object.
+function buildRateDesc(cp) {
+  if (cp.rates_text) {
+    // Already a nicely formatted string – return as-is
+    return cp.rates_text;
+  }
+  if (!cp.rates) {
+    return cp.no.startsWith('COMM_')
+      ? 'Commercial – rates unavailable'
+      : `HDB Public (Night Cap: ${cp.night || 'N'}, Free FPS: ${cp.free || 'N/A'})`;
+  }
+  // Auto-generate from the structured rates object
+  const lines = [];
+  const dayLabels = { weekday: 'Mon–Fri', saturday: 'Saturday', sunday: 'Sun / PH' };
+  for (const [dayKey, slots] of Object.entries(cp.rates)) {
+    if (!Array.isArray(slots) || slots.length === 0) continue;
+    const label = dayLabels[dayKey] || dayKey;
+    const slotStrs = slots.map(s => {
+      const timeStr = `${String(s.start).padStart(2,'0')}:00–${s.end === 24 ? '00:00' : String(s.end).padStart(2,'0')+':00'}`;
+      if (s.per_entry !== undefined)  return `${timeStr}: $${s.per_entry.toFixed(2)}/entry`;
+      if (s.per_hour !== undefined)   return `${timeStr}: $${s.per_hour.toFixed(2)}/hr`;
+      let txt = timeStr + ':';
+      if (s.first_hour !== undefined)    txt += ` $${s.first_hour.toFixed(2)} 1st hr`;
+      if (s.first_90mins !== undefined)  txt += ` $${s.first_90mins.toFixed(2)} 1st 90min`;
+      if (s.subsequent_30mins !== undefined) txt += `, $${s.subsequent_30mins.toFixed(2)}/30min`;
+      if (s.subsequent_15mins !== undefined) txt += `, $${s.subsequent_15mins.toFixed(2)}/15min`;
+      return txt;
+    });
+    lines.push(`${label}\n${slotStrs.join('\n')}`);
+  }
+  return lines.join('\n\n') || 'See car park for rates';
+}
+
 // Initializer
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
@@ -678,6 +713,30 @@ function fetchLiveLots(callback) {
     });
 }
 
+// Batch-fetch real walking times from OSRM for all results, then render.
+function fetchOSRMWalkingTimes(results, destLat, destLng, callback) {
+  if (results.length === 0) { callback(results); return; }
+
+  // Fire all requests in parallel (max 20 results to stay polite to OSRM)
+  const limited = results.slice(0, 20);
+  const rest    = results.slice(20);
+
+  const promises = limited.map(cp => {
+    const url = `https://router.project-osrm.org/route/v1/foot/${destLng},${destLat};${cp.lng},${cp.lat}?overview=false`;
+    return fetch(url)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.routes && data.routes.length > 0) {
+          cp.walkMins = Math.ceil(data.routes[0].duration / 60);
+          cp.walkDist = data.routes[0].distance;
+        }
+      })
+      .catch(() => {}); // silently fall back to straight-line estimate
+  });
+
+  Promise.all(promises).then(() => callback([...limited, ...rest]));
+}
+
 // Core Pricing & Geospatial calculations for nearby spots
 function performCalculation() {
   if (!state.destination) return;
@@ -707,13 +766,21 @@ function performCalculation() {
 
     state.searchResults = results;
 
-    // Render on Map and Sidebar List
+    // Render immediately with straight-line walking estimates, then
+    // update with real OSRM walking times once they arrive.
     renderCarparkMarkers();
     renderCarparkList();
 
     // Auto-expand mobile bottom sheet drawer when new search results arrive
     const mDrawer = document.querySelector('.mobile-drawer');
     if (mDrawer) mDrawer.classList.add('expanded');
+
+    // Async: fetch real walking times and re-render with accurate values
+    fetchOSRMWalkingTimes(results, destLat, destLng, (updatedResults) => {
+      state.searchResults = updatedResults;
+      renderCarparkMarkers();
+      renderCarparkList();
+    });
   });
 }
 
@@ -749,9 +816,16 @@ function renderCarparkMarkers() {
     const marker = L.marker([cp.lat, cp.lng], { icon: customIcon }).addTo(state.map);
     
     // Build popup content
-    const rateDesc = cp.no.startsWith("COMM_") 
-      ? "Commercial Mall Rates" 
-      : `Standard HDB Rates (Night Cap: ${cp.night}, Free FPS: ${cp.free})`;
+    // Walking time: use real OSRM data if available, otherwise straight-line estimate
+    const walkLabel = cp.walkMins !== undefined
+      ? `${cp.walkMins} min${cp.walkMins > 1 ? 's' : ''} walk (${formatDistance(cp.walkDist)} via street)`
+      : formatWalkingTime(cp.distance);
+
+    const rateDesc = buildRateDesc(cp);
+    const rateDescHtml = rateDesc
+      .split('\n')
+      .map(line => `<span>${line}</span>`)
+      .join('<br>');
     
     const live = state.liveLots && state.liveLots[cp.no];
     let liveLotsText = 'Pricing Computed';
@@ -767,25 +841,25 @@ function renderCarparkMarkers() {
     }
     
     const popupContent = `
-      <div style="font-family: var(--font-family); padding: 4px;">
+      <div style="font-family: var(--font-family); padding: 4px; max-width: 260px;">
         <h4 style="font-weight: 700; color: #fff; margin-bottom: 2px;">${cp.name || cp.addr}</h4>
         <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">${cp.addr}</p>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span style="font-weight: 800; color: var(--accent-green); font-size: 16px;">${priceText}</span>
-          <span style="font-size: 12px; color: var(--text-secondary);"><i class="fas fa-walking"></i> ${formatWalkingTime(cp.distance)}</span>
+          <span style="font-size: 12px; color: var(--text-secondary);"><i class="fas fa-walking"></i> ${walkLabel}</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 11px;">
           <span style="color: var(--text-muted);">Availability:</span>
           <span style="${liveLotsStyle}">${liveLotsText}</span>
         </div>
-        <p style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px;">${rateDesc}</p>
+        <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; white-space: pre-line;">${rateDescHtml}</div>
         <button onclick="launchDirections(${cp.lat}, ${cp.lng})" class="drive-btn" style="padding: 6px 12px; width: 100%; font-size: 12px;">
           <i class="fas fa-navigation"></i> Drive There
         </button>
       </div>
     `;
     
-    marker.bindPopup(popupContent);
+    marker.bindPopup(popupContent, { maxWidth: 280 });
     state.markers.push(marker);
   });
 }
@@ -870,7 +944,7 @@ function renderCarparkList() {
         </div>
       </div>
       <div class="card-details">
-        <div class="detail-item"><i class="fas fa-walking"></i> <span>${formatWalkingTime(cp.distance)} walk (${formatDistance(cp.distance)})</span></div>
+        <div class="detail-item"><i class="fas fa-walking"></i> <span>${cp.walkMins !== undefined ? `${cp.walkMins} min${cp.walkMins > 1 ? 's' : ''} walk (${formatDistance(cp.walkDist)} via street)` : `${formatWalkingTime(cp.distance)} walk (${formatDistance(cp.distance)})`}</span></div>
         ${lotsHtml}
       </div>
       ${cp.rates_text ? `

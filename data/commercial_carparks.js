@@ -413,6 +413,7 @@ const COMMERCIAL_CARPARKS = [
     "addr": "3 Temasek Blvd, Singapore 038983",
     "lat": 1.293483,
     "lng": 103.856983,
+    "rates_text": "MON-FRI Before 5pm\n$2.20 for 1st hr, $1.10 for subsequent 30 min (7am–5pm)\n\nMON-FRI After 5pm\n$2.20/entry (5pm–7am next day)\n\nSATURDAY\n$1.10/hr (7am–5pm), $2.80/entry (5pm–7am next day)\n\nSUNDAY / PUBLIC HOLIDAYS\n$1.10/hr (7am–5pm), $2.80/entry (5pm–7am next day)",
     "rates": {
       "weekday": [
         {
@@ -435,25 +436,35 @@ const COMMERCIAL_CARPARKS = [
       "saturday": [
         {
           "start": 7,
-          "end": 24,
+          "end": 17,
           "per_hour": 1.1
+        },
+        {
+          "start": 17,
+          "end": 24,
+          "per_entry": 2.8
         },
         {
           "start": 0,
           "end": 7,
-          "per_hour": 1.1
+          "per_entry": 2.8
         }
       ],
       "sunday": [
         {
           "start": 7,
-          "end": 24,
+          "end": 17,
           "per_hour": 1.1
+        },
+        {
+          "start": 17,
+          "end": 24,
+          "per_entry": 2.8
         },
         {
           "start": 0,
           "end": 7,
-          "per_hour": 1.1
+          "per_entry": 2.8
         }
       ]
     }
