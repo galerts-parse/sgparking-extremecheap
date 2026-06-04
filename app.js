@@ -367,7 +367,7 @@ function setupEventListeners() {
       if (isExpanded) {
         offset = Math.max(0, diffY);
       } else {
-        const collapsedOffset = drawerH - 20;
+        const collapsedOffset = drawerH - 36;
         offset = Math.max(0, Math.min(collapsedOffset, collapsedOffset + diffY));
       }
       drawer.style.transform = `translateY(${offset}px)`;
@@ -807,11 +807,9 @@ function renderCarparkMarkers() {
       ? `${cp.walkMins} min${cp.walkMins > 1 ? 's' : ''} walk (${formatDistance(cp.walkDist)} via street)`
       : formatWalkingTime(cp.distance);
 
-    const rateDesc = buildRateDesc(cp);
-    const rateDescHtml = rateDesc
-      .split('\n')
-      .map(line => `<span>${line}</span>`)
-      .join('<br>');
+    const rateDescHtml = cp.pricingLog && cp.pricingLog.length > 0
+      ? cp.pricingLog.map(line => `<span>${line}</span>`).join('<br>')
+      : buildRateDesc(cp).split('\n').map(line => `<span>${line}</span>`).join('<br>');
     
     const live = state.liveLots && state.liveLots[cp.no];
     let liveLotsText = 'Pricing Computed';
@@ -947,10 +945,11 @@ function renderCarparkList() {
         <div class="detail-item"><i class="fas fa-walking"></i> <span>${cp.walkMins !== undefined ? `${cp.walkMins} min${cp.walkMins > 1 ? 's' : ''} walk (${formatDistance(cp.walkDist)} via street)` : `${formatWalkingTime(cp.distance)} walk (${formatDistance(cp.distance)})`}</span></div>
         ${lotsHtml}
       </div>
-      ${cp.rates_text ? `
+      ${cp.pricingLog ? `
       <div class="rate-info-box" style="display: none; font-size: 13px; line-height: 1.45; margin-top: 10px; padding: 12px; border-radius: 12px; background: rgba(15, 23, 42, 0.03); border: 1px dashed var(--border-light); color: var(--text-secondary); width: 100%; white-space: pre-line; text-align: left;">
-        <div style="font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); margin-bottom: 6px;"><i class="far fa-file-alt"></i> SGCarMart Rate Details</div>
-        ${cp.rates_text}
+        <div style="font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--primary); margin-bottom: 6px;"><i class="fas fa-calculator"></i> Price Calculation Logic</div>
+        ${cp.pricingLog.join('<br>')}
+        ${cp.rates_text ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.1); font-size: 11px; color: var(--text-muted);"><i class="far fa-file-alt"></i> Source Rate Text:<br>${cp.rates_text.replace(/\\n/g, '<br>')}</div>` : ''}
       </div>
       ` : ''}
       <div class="action-row" style="display: none;" id="actions-${cp.no}">

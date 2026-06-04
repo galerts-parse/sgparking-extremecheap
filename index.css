@@ -1110,8 +1110,8 @@ body {
     border-bottom: none;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    /* Fully collapsed: only the 20px handle bar is visible */
-    transform: translateY(calc(100% - 20px));
+    /* Fully collapsed: leave 36px visible for the larger drag handle */
+    transform: translateY(calc(100% - 36px));
     transition: transform 0.4s cubic-bezier(0.1, 0.76, 0.55, 0.94);
     /* Hide the desktop controls — not needed on mobile */
     display: flex;

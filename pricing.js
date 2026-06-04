@@ -104,7 +104,7 @@ function calculateHDBRate(carpark, arrivalTime, durationMins) {
   // 7am-8am (1h = 2 blocks @ $0.60 = $1.20)
   // Total should be $3.00 + $5.00 + $1.20 = $9.20.
   // Let's implement this overnight capping properly:
-  return calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral);
+  return calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral).cost;
 }
 
 /**
@@ -115,15 +115,16 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
   const endTime = new Date(arrivalTime.getTime() + durationMins * 60 * 1000);
   
   let dayCost = 0.0;
-  
-  // Track night parking charges grouped by "night session" (e.g., "YYYY-MM-DD" of the night start)
   const nightSessions = {};
+  const log = [];
   
   while (currentTime < endTime) {
     const blockEnd = new Date(currentTime.getTime() + 30 * 60 * 1000);
     const dayOfWeek = currentTime.getDay();
     const hour = currentTime.getHours();
     const minutesIntoDay = hour * 60 + currentTime.getMinutes();
+    
+    const timeStr = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')} - ${blockEnd.getHours().toString().padStart(2, '0')}:${blockEnd.getMinutes().toString().padStart(2, '0')}`;
     
     // 1. Check Free Parking
     let isFree = false;
@@ -134,6 +135,7 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
     }
     
     if (isFree) {
+      log.push(`[${timeStr}] Free Parking (Sun/PH)`);
       currentTime = blockEnd;
       continue;
     }
@@ -142,8 +144,6 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
     const isNight = minutesIntoDay >= 1350 || minutesIntoDay < 420;
     
     if (isNight && carpark.night === "YES") {
-      // Determine which night session this belongs to.
-      // If hour is < 7, it belongs to the previous calendar day's night session.
       let sessionKey = "";
       if (hour < 7) {
         const prevDay = new Date(currentTime.getTime() - 12 * 60 * 60 * 1000);
@@ -156,31 +156,34 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
         nightSessions[sessionKey] = 0.0;
       }
       
-      // Only charge if under the $5.00 cap for this night session
       if (nightSessions[sessionKey] < 5.0) {
         nightSessions[sessionKey] = Math.min(5.0, nightSessions[sessionKey] + 0.60);
+        log.push(`[${timeStr}] Night Parking: +$0.60 (Session Total: $${nightSessions[sessionKey].toFixed(2)})`);
+      } else {
+        log.push(`[${timeStr}] Night Parking: Capped at $5.00`);
       }
     } else {
       // Day parking rate
       if (inCentral && hour >= 7 && hour < 17 && dayOfWeek !== 0) {
-        // Central area restricted hours
         dayCost += 1.20;
+        log.push(`[${timeStr}] Central Area: +$1.20`);
       } else {
-        // Normal HDB rate
         dayCost += 0.60;
+        log.push(`[${timeStr}] Standard Day: +$0.60`);
       }
     }
     
     currentTime = blockEnd;
   }
   
-  // Sum up day costs and capped night sessions
   let totalNightCost = 0.0;
   for (const session in nightSessions) {
     totalNightCost += nightSessions[session];
   }
   
-  return dayCost + totalNightCost;
+  const totalCost = dayCost + totalNightCost;
+  log.push(`Total Computed Cost: $${totalCost.toFixed(2)}`);
+  return { cost: totalCost, log: log };
 }
 
 function getRateBlock(rates, time) {
@@ -204,11 +207,17 @@ function getRateBlock(rates, time) {
  * @param {Object} carpark - Commercial carpark record
  * @param {Date} arrivalTime - Date object representing arrival time
  * @param {number} durationMins - Estimated duration in minutes
- * @returns {number} Calculated price in SGD
+ * @returns {Object} { cost, log }
  */
 function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   const rates = carpark.rates;
-  if (!rates) return 1.20 * Math.ceil(durationMins / 60); // Fallback to standard rate
+  const log = [];
+  
+  if (!rates) {
+    const cost = 1.20 * Math.ceil(durationMins / 60);
+    log.push(`No precise rates found. Fallback flat rate: $${cost.toFixed(2)}`);
+    return { cost, log };
+  }
   
   let totalCost = 0.0;
   let currentTime = new Date(arrivalTime.getTime());
@@ -218,6 +227,7 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     const slot = getRateBlock(rates, currentTime);
     if (!slot) {
       totalCost += 1.50; // flat fallback
+      log.push(`Unknown time block, adding fallback $1.50`);
       break;
     }
 
@@ -242,10 +252,14 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     }
 
     let timeToSpendInSlot = Math.min(minsInSlot, minsRemaining);
+    
+    const timeStr = `${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`;
+    const descStr = `(Rule: ${slot.start}-${slot.end})`;
 
     // Calculate cost for timeToSpendInSlot using this slot's rules
     if (slot.per_entry !== undefined) {
       totalCost += slot.per_entry;
+      log.push(`[${timeStr}] ${timeToSpendInSlot} mins ${descStr}: Per Entry +$${slot.per_entry.toFixed(2)}`);
     } else {
       let durationHours = timeToSpendInSlot / 60.0;
       let slotCost = 0.0;
@@ -263,24 +277,40 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
       
       if (durationHours <= firstHourDuration) {
         slotCost = firstHourCost;
+        log.push(`[${timeStr}] ${timeToSpendInSlot} mins ${descStr}: 1st Hr base +$${slotCost.toFixed(2)}`);
       } else {
         slotCost = firstHourCost;
+        let breakdownStr = `1st Hr base +$${firstHourCost.toFixed(2)}`;
         const remainingHours = durationHours - firstHourDuration;
+        
         if (slot.subsequent_30mins !== undefined) {
-          slotCost += Math.ceil(remainingHours * 2) * slot.subsequent_30mins;
+          const added = Math.ceil(remainingHours * 2) * slot.subsequent_30mins;
+          slotCost += added;
+          breakdownStr += `, sub. 30min +$${added.toFixed(2)}`;
         } else if (slot.subsequent_15mins !== undefined) {
-          slotCost += Math.ceil(remainingHours * 4) * slot.subsequent_15mins;
+          const added = Math.ceil(remainingHours * 4) * slot.subsequent_15mins;
+          slotCost += added;
+          breakdownStr += `, sub. 15min +$${added.toFixed(2)}`;
         } else if (slot.subsequent_10mins !== undefined) {
-          slotCost += Math.ceil(remainingHours * 6) * slot.subsequent_10mins;
+          const added = Math.ceil(remainingHours * 6) * slot.subsequent_10mins;
+          slotCost += added;
+          breakdownStr += `, sub. 10min +$${added.toFixed(2)}`;
         } else if (slot.per_hour !== undefined) {
-          slotCost += Math.ceil(remainingHours) * slot.per_hour;
+          const added = Math.ceil(remainingHours) * slot.per_hour;
+          slotCost += added;
+          breakdownStr += `, per hr +$${added.toFixed(2)}`;
         } else {
-          slotCost += Math.ceil(remainingHours) * 1.50; // fallback
+          const added = Math.ceil(remainingHours) * 1.50; // fallback
+          slotCost += added;
+          breakdownStr += `, fallback hr +$${added.toFixed(2)}`;
         }
+        
+        log.push(`[${timeStr}] ${timeToSpendInSlot} mins ${descStr}: ${breakdownStr} = +$${slotCost.toFixed(2)}`);
       }
       
-      if (slot.max_cap !== undefined) {
-        slotCost = Math.min(slot.max_cap, slotCost);
+      if (slot.max_cap !== undefined && slotCost > slot.max_cap) {
+        slotCost = slot.max_cap;
+        log.push(`[${timeStr}] Capped at max +$${slot.max_cap.toFixed(2)}`);
       }
       
       totalCost += slotCost;
@@ -296,7 +326,8 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     }
   }
   
-  return totalCost;
+  log.push(`Total Computed Cost: $${totalCost.toFixed(2)}`);
+  return { cost: totalCost, log: log };
 }
 
 /**
@@ -309,6 +340,8 @@ function calculateCarparkCost(carpark, arrivalTime, durationMins) {
   if (carpark.no.startsWith("COMM_")) {
     return calculateCommercialRate(carpark, arrivalTime, durationMins);
   } else {
-    return calculateHDBRate(carpark, arrivalTime, durationMins);
+    // Note: calculateHDBRate doesn't return log yet, but calculateHDBRatePrecise does.
+    // Replace the default HDB call with precise call for logging.
+    return calculateHDBRatePrecise(carpark, arrivalTime, durationMins, isInCentralArea(carpark.lat, carpark.lng));
   }
 }
