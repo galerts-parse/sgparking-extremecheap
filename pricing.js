@@ -183,6 +183,22 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
   return dayCost + totalNightCost;
 }
 
+function getRateBlock(rates, time) {
+  const dayOfWeek = time.getDay();
+  let dayRates = [];
+  if (dayOfWeek === 0) dayRates = rates.sunday || rates.saturday || rates.weekday;
+  else if (dayOfWeek === 6) dayRates = rates.saturday || rates.weekday;
+  else dayRates = rates.weekday;
+
+  if (!dayRates || dayRates.length === 0) return null;
+
+  const decimalTime = time.getHours() + time.getMinutes() / 60.0 + time.getSeconds() / 3600.0;
+  for (const slot of dayRates) {
+    if (decimalTime >= slot.start && decimalTime < slot.end) return slot;
+  }
+  return dayRates[0]; // fallback
+}
+
 /**
  * Calculates the parking cost for a Commercial Carpark (Shopping Mall).
  * @param {Object} carpark - Commercial carpark record
@@ -192,99 +208,92 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
  */
 function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   const rates = carpark.rates;
-  if (!rates) return 1.20 * (durationMins / 60); // Fallback to standard rate
+  if (!rates) return 1.20 * Math.ceil(durationMins / 60); // Fallback to standard rate
   
   let totalCost = 0.0;
+  let currentTime = new Date(arrivalTime.getTime());
+  let minsRemaining = durationMins;
   
-  // Determine if weekday, Saturday, or Sunday
-  const dayOfWeek = arrivalTime.getDay(); // 0 = Sunday, 6 = Saturday, 1-5 = Weekday
-  let dayRates = [];
-  if (dayOfWeek === 0) {
-    dayRates = rates.sunday || rates.saturday || rates.weekday;
-  } else if (dayOfWeek === 6) {
-    dayRates = rates.saturday || rates.weekday;
-  } else {
-    dayRates = rates.weekday;
-  }
-  
-  // Parse hour and minute of arrival
-  const arrivalHour = arrivalTime.getHours();
-  const arrivalMins = arrivalTime.getMinutes();
-  const arrivalTimeDecimal = arrivalHour + arrivalMins / 60.0;
-  
-  // Find which rate slot the entry falls into
-  let matchingSlot = null;
-  for (const slot of dayRates) {
-    // If the slot crosses midnight (e.g. 17:00 to 24:00 or 17:00 to 08:00 next day)
-    const slotStart = slot.start;
-    const slotEnd = slot.end;
-    
-    if (arrivalTimeDecimal >= slotStart && arrivalTimeDecimal < slotEnd) {
-      matchingSlot = slot;
+  while (minsRemaining > 0) {
+    const slot = getRateBlock(rates, currentTime);
+    if (!slot) {
+      totalCost += 1.50; // flat fallback
       break;
     }
-  }
-  
-  // If no slot matches, fallback to first slot
-  if (!matchingSlot && dayRates.length > 0) {
-    matchingSlot = dayRates[0];
-  }
-  
-  if (!matchingSlot) {
-    return 2.50; // Flat fallback
-  }
-  
-  // Calculate pricing based on the matching entry slot's pricing model
-  if (matchingSlot.per_entry !== undefined) {
-    return matchingSlot.per_entry;
-  }
-  
-  // Check hourly rate structures
-  const durationHours = durationMins / 60.0;
-  
-  // First hour / first 90 mins rates
-  let firstHourCost = 0.0;
-  let firstHourDuration = 1.0;
-  
-  if (matchingSlot.first_hour !== undefined) {
-    firstHourCost = matchingSlot.first_hour;
-    firstHourDuration = 1.0;
-  } else if (matchingSlot.first_90mins !== undefined) {
-    firstHourCost = matchingSlot.first_90mins;
-    firstHourDuration = 1.5;
-  }
-  
-  if (durationHours <= firstHourDuration) {
-    totalCost = firstHourCost;
-  } else {
-    totalCost = firstHourCost;
-    const remainingHours = durationHours - firstHourDuration;
+
+    let slotEndHour = Math.floor(slot.end);
+    let slotEndMin = Math.round((slot.end - slotEndHour) * 60);
+    let slotEndTime = new Date(currentTime.getTime());
+    slotEndTime.setHours(slotEndHour, slotEndMin, 0, 0);
     
-    if (matchingSlot.subsequent_30mins !== undefined) {
-      // Round UP remaining duration to nearest 30 mins
-      const blocks30 = Math.ceil(remainingHours * 2);
-      totalCost += blocks30 * matchingSlot.subsequent_30mins;
-    } else if (matchingSlot.subsequent_15mins !== undefined) {
-      // Round UP remaining duration to nearest 15 mins
-      const blocks15 = Math.ceil(remainingHours * 4);
-      totalCost += blocks15 * matchingSlot.subsequent_15mins;
-    } else if (matchingSlot.subsequent_10mins !== undefined) {
-      // Round UP remaining duration to nearest 10 mins
-      const blocks10 = Math.ceil(remainingHours * 6);
-      totalCost += blocks10 * matchingSlot.subsequent_10mins;
-    } else if (matchingSlot.per_hour !== undefined) {
-      // Round UP remaining duration to nearest hour
-      const blocksHour = Math.ceil(remainingHours);
-      totalCost += blocksHour * matchingSlot.per_hour;
-    } else {
-      // Fallback
-      totalCost += Math.ceil(remainingHours) * 1.50;
+    // Roll over to next day if slot end is 24
+    if (slot.end === 24) {
+      slotEndTime.setHours(0, 0, 0, 0);
+      slotEndTime.setDate(slotEndTime.getDate() + 1);
     }
-  }
-  
-  // Apply maximum cap if specified in the slot
-  if (matchingSlot.max_cap !== undefined) {
-    totalCost = Math.min(matchingSlot.max_cap, totalCost);
+
+    let minsInSlot = (slotEndTime.getTime() - currentTime.getTime()) / 60000;
+    
+    // Force cross boundary if precision issues or exact boundary
+    if (minsInSlot <= 0) {
+        currentTime.setMinutes(currentTime.getMinutes() + 1);
+        minsRemaining -= 1;
+        continue;
+    }
+
+    let timeToSpendInSlot = Math.min(minsInSlot, minsRemaining);
+
+    // Calculate cost for timeToSpendInSlot using this slot's rules
+    if (slot.per_entry !== undefined) {
+      totalCost += slot.per_entry;
+    } else {
+      let durationHours = timeToSpendInSlot / 60.0;
+      let slotCost = 0.0;
+      
+      let firstHourCost = 0.0;
+      let firstHourDuration = 0.0;
+      
+      if (slot.first_hour !== undefined) {
+        firstHourCost = slot.first_hour;
+        firstHourDuration = 1.0;
+      } else if (slot.first_90mins !== undefined) {
+        firstHourCost = slot.first_90mins;
+        firstHourDuration = 1.5;
+      }
+      
+      if (durationHours <= firstHourDuration) {
+        slotCost = firstHourCost;
+      } else {
+        slotCost = firstHourCost;
+        const remainingHours = durationHours - firstHourDuration;
+        if (slot.subsequent_30mins !== undefined) {
+          slotCost += Math.ceil(remainingHours * 2) * slot.subsequent_30mins;
+        } else if (slot.subsequent_15mins !== undefined) {
+          slotCost += Math.ceil(remainingHours * 4) * slot.subsequent_15mins;
+        } else if (slot.subsequent_10mins !== undefined) {
+          slotCost += Math.ceil(remainingHours * 6) * slot.subsequent_10mins;
+        } else if (slot.per_hour !== undefined) {
+          slotCost += Math.ceil(remainingHours) * slot.per_hour;
+        } else {
+          slotCost += Math.ceil(remainingHours) * 1.50; // fallback
+        }
+      }
+      
+      if (slot.max_cap !== undefined) {
+        slotCost = Math.min(slot.max_cap, slotCost);
+      }
+      
+      totalCost += slotCost;
+    }
+
+    minsRemaining -= timeToSpendInSlot;
+    currentTime.setTime(currentTime.getTime() + timeToSpendInSlot * 60000);
+    
+    // If we exactly exhausted the slot but still have time remaining, step 1 minute to trigger next slot
+    if (minsRemaining > 0 && timeToSpendInSlot === minsInSlot) {
+      currentTime.setMinutes(currentTime.getMinutes() + 1);
+      minsRemaining -= 1;
+    }
   }
   
   return totalCost;

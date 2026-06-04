@@ -828,7 +828,7 @@ function renderCarparkMarkers() {
     
     const popupContent = `
       <div style="font-family: var(--font-family); padding: 4px; max-width: 260px;">
-        <h4 style="font-weight: 700; color: #fff; margin-bottom: 2px;">${cp.name || cp.addr}</h4>
+        <h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${cp.name || cp.addr}</h4>
         <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">${cp.addr}</p>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span style="font-weight: 800; color: var(--accent-green); font-size: 16px;">${priceText}</span>
