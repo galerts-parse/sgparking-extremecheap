@@ -740,12 +740,13 @@ function performCalculation() {
       // Only pull and calculate for carparks within 1 km (1000 meters)
       if (dist <= 1000) {
         // Calculate Price
-        const price = calculateCarparkCost(cp, state.arrivalTime, state.duration);
+        const costResult = calculateCarparkCost(cp, state.arrivalTime, state.duration);
         
         results.push({
           ...cp,
           distance: dist,
-          price: price
+          price: costResult.cost !== undefined ? costResult.cost : 0,
+          pricingLog: costResult.log || []
         });
       }
     });
