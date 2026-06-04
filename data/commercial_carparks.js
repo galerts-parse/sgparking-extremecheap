@@ -413,9 +413,14 @@ const COMMERCIAL_CARPARKS = [
     "addr": "3 Temasek Blvd, Singapore 038983",
     "lat": 1.293483,
     "lng": 103.856983,
-    "rates_text": "MON-FRI (Before 5pm)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–5pm)\n\nMON-FRI (After 5pm)\n$3.00/entry (5pm–4am next day)\n\nSATURDAY\n$2.60 for 1st hr, $1.30 for next 3hrs, $1.30/30min afterward (7am–4am next day)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–7am)\n\nSUNDAY / PUBLIC HOLIDAYS\n$2.60 for 1st hr, $1.30 for next 3hrs, $1.30/30min afterward (7am–4am next day)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–7am)",
+    "rates_text": "Mon - Fri (Before 5/6pm): $2.60 for 1st hr, $1.30 for subsequent 30min from 4am to 5pm\\nMon - Fri (After 5/6pm): $3.00/entry from 5pm to 4am\\nSaturday/Sunday: $2.60 for 1st hr, $1.30 for next 3hr, $1.30/30min afterward (7am-4am)",
     "rates": {
       "weekday": [
+        {
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
         {
           "start": 4,
           "end": 17,
@@ -426,38 +431,53 @@ const COMMERCIAL_CARPARKS = [
           "start": 17,
           "end": 24,
           "per_entry": 3.0
-        },
-        {
-          "start": 0,
-          "end": 4,
-          "per_entry": 3.0
         }
       ],
       "saturday": [
         {
-          "start": 7,
-          "end": 24,
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
+        {
+          "start": 4,
+          "end": 7,
           "first_hour": 2.6,
           "subsequent_30mins": 1.3
         },
         {
-          "start": 0,
-          "end": 7,
+          "start": 7,
+          "end": 11,
           "first_hour": 2.6,
+          "subsequent_30mins": 0.2166
+        },
+        {
+          "start": 11,
+          "end": 24,
           "subsequent_30mins": 1.3
         }
       ],
       "sunday": [
         {
-          "start": 7,
-          "end": 24,
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
+        {
+          "start": 4,
+          "end": 7,
           "first_hour": 2.6,
           "subsequent_30mins": 1.3
         },
         {
-          "start": 0,
-          "end": 7,
+          "start": 7,
+          "end": 11,
           "first_hour": 2.6,
+          "subsequent_30mins": 0.2166
+        },
+        {
+          "start": 11,
+          "end": 24,
           "subsequent_30mins": 1.3
         }
       ]
@@ -4050,39 +4070,27 @@ const COMMERCIAL_CARPARKS = [
     "addr": "1000 East Coast Parkway, Singapore 449876",
     "lat": 1.3014332892252,
     "lng": 103.912911298667,
-    "rates_text": "MON-FRI Before 5/6 PM\nHDB / URA parking rates \n\nMON-FRI After 5/6 PM\nHDB / URA parking rates \n\nSAT\nHDB / URA parking rates \n\nSUN / PUBLIC HOLIDAYS\nHDB / URA parking rates \n\nREMARKS\n15min grace period",
+    "rates_text": "HDB / URA parking rates ($0.60 per half hour)",
     "rates": {
       "weekday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "saturday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "sunday": [
         {
           "start": 0,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ]
     }
@@ -4093,39 +4101,27 @@ const COMMERCIAL_CARPARKS = [
     "addr": "1000 East Coast Parkway, Singapore 449876",
     "lat": 1.3014332892252,
     "lng": 103.912911298667,
-    "rates_text": "MON-FRI Before 5/6 PM\nHDB / URA parking rates \n\nMON-FRI After 5/6 PM\nHDB / URA parking rates \n\nSAT\nHDB / URA parking rates \n\nSUN / PUBLIC HOLIDAYS\nHDB / URA parking rates \n\nREMARKS\n15min grace period",
+    "rates_text": "HDB / URA parking rates ($0.60 per half hour)",
     "rates": {
       "weekday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "saturday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "sunday": [
         {
           "start": 0,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ]
     }
@@ -4136,7 +4132,7 @@ const COMMERCIAL_CARPARKS = [
     "addr": "90 Robertson Quay, Singapore 238259",
     "lat": 1.29083412595769,
     "lng": 103.837280353189,
-    "rates_text": "MON-FRI Before 5/6 PM\n$1.50 for 1st hr, $0.50 for next subsequent 30min from 6am to 6pm \n\nMON-FRI After 5/6 PM\n$4.00/entry from 6pm to 6am the following day \n\nSAT\nCharges same as weekdays \n\nSUN / PUBLIC HOLIDAYS\nCharges same as weekdays \n\nREMARKS\n10min grace period, Season Parking At $160.00/mth",
+    "rates_text": "1146 Results",
     "rates": {
       "weekday": [
         {
@@ -12994,39 +12990,27 @@ const COMMERCIAL_CARPARKS = [
     "addr": "1220 East Coast Parkway, Singapore 468960",
     "lat": 1.30726106591172,
     "lng": 103.934799737098,
-    "rates_text": "MON-FRI Before 5/6 PM\nHDB / URA parking rates \n\nMON-FRI After 5/6 PM\nHDB / URA parking rates \n\nSAT\nHDB / URA parking rates \n\nSUN / PUBLIC HOLIDAYS\nHDB / URA parking rates \n\nREMARKS\n15min grace period",
+    "rates_text": "HDB / URA parking rates ($0.60 per half hour)",
     "rates": {
       "weekday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "saturday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "sunday": [
         {
           "start": 0,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ]
     }
@@ -20261,39 +20245,27 @@ const COMMERCIAL_CARPARKS = [
     "addr": "1000 East Coast Parkway, Singapore 449876",
     "lat": 1.3014332892252,
     "lng": 103.912911298667,
-    "rates_text": "MON-FRI Before 5/6 PM\nHDB / URA parking rates \n\nMON-FRI After 5/6 PM\nHDB / URA parking rates \n\nSAT\nHDB / URA parking rates \n\nSUN / PUBLIC HOLIDAYS\nHDB / URA parking rates \n\nREMARKS\n15min grace period",
+    "rates_text": "HDB / URA parking rates ($0.60 per half hour)",
     "rates": {
       "weekday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "saturday": [
         {
           "start": 0,
-          "end": 18,
-          "first_hour": 2.0,
-          "subsequent_30mins": 1.0
-        },
-        {
-          "start": 18,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ],
       "sunday": [
         {
           "start": 0,
           "end": 24,
-          "per_entry": 3.0
+          "per_30mins": 0.6
         }
       ]
     }
@@ -29678,9 +29650,14 @@ const COMMERCIAL_CARPARKS = [
     "addr": "3 Temasek Boulevard, Singapore 038983",
     "lat": 1.29485990186642,
     "lng": 103.860333693777,
-    "rates_text": "MON-FRI (Before 5pm)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–5pm)\n\nMON-FRI (After 5pm)\n$3.00/entry (5pm–4am next day)\n\nSATURDAY\n$2.60 for 1st hr, $1.30 for next 3hrs, $1.30/30min afterward (7am–4am next day)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–7am)\n\nSUNDAY / PUBLIC HOLIDAYS\n$2.60 for 1st hr, $1.30 for next 3hrs, $1.30/30min afterward (7am–4am next day)\n$2.60 for 1st hr, $1.30 for subsequent 30min (4am–7am)",
+    "rates_text": "Mon - Fri (Before 5/6pm): $2.60 for 1st hr, $1.30 for subsequent 30min from 4am to 5pm\\nMon - Fri (After 5/6pm): $3.00/entry from 5pm to 4am\\nSaturday/Sunday: $2.60 for 1st hr, $1.30 for next 3hr, $1.30/30min afterward (7am-4am)",
     "rates": {
       "weekday": [
+        {
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
         {
           "start": 4,
           "end": 17,
@@ -29691,38 +29668,53 @@ const COMMERCIAL_CARPARKS = [
           "start": 17,
           "end": 24,
           "per_entry": 3.0
-        },
-        {
-          "start": 0,
-          "end": 4,
-          "per_entry": 3.0
         }
       ],
       "saturday": [
         {
-          "start": 7,
-          "end": 24,
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
+        {
+          "start": 4,
+          "end": 7,
           "first_hour": 2.6,
           "subsequent_30mins": 1.3
         },
         {
-          "start": 0,
-          "end": 7,
+          "start": 7,
+          "end": 11,
           "first_hour": 2.6,
+          "subsequent_30mins": 0.2166
+        },
+        {
+          "start": 11,
+          "end": 24,
           "subsequent_30mins": 1.3
         }
       ],
       "sunday": [
         {
-          "start": 7,
-          "end": 24,
+          "start": 0,
+          "end": 4,
+          "per_entry": 3.0
+        },
+        {
+          "start": 4,
+          "end": 7,
           "first_hour": 2.6,
           "subsequent_30mins": 1.3
         },
         {
-          "start": 0,
-          "end": 7,
+          "start": 7,
+          "end": 11,
           "first_hour": 2.6,
+          "subsequent_30mins": 0.2166
+        },
+        {
+          "start": 11,
+          "end": 24,
           "subsequent_30mins": 1.3
         }
       ]
