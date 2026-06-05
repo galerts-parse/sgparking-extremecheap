@@ -808,9 +808,10 @@ function renderCarparkMarkers() {
       ? `${cp.walkMins} min${cp.walkMins > 1 ? 's' : ''} walk (${formatDistance(cp.walkDist)} via street)`
       : formatWalkingTime(cp.distance);
 
-    const rateDescHtml = cp.pricingLog && cp.pricingLog.length > 0
-      ? cp.pricingLog.map(line => `<span>${line}</span>`).join('<br>')
-      : buildRateDesc(cp).split('\n').map(line => `<span>${line}</span>`).join('<br>');
+    const rateDescHtml = buildRateDesc(cp).split('\n').map(line => `<span>${line}</span>`).join('<br>');
+    const calcLogHtml = cp.pricingLog && cp.pricingLog.length > 0
+      ? `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed rgba(0,0,0,0.1); color:var(--primary); font-weight:600;"><i class="fas fa-calculator"></i> Calculation:</div>` + cp.pricingLog.map(line => `<span>${line}</span>`).join('<br>')
+      : '';
     
     const live = state.liveLots && state.liveLots[cp.no];
     let liveLotsText = 'Pricing Computed';
@@ -837,7 +838,7 @@ function renderCarparkMarkers() {
           <span style="color: var(--text-muted);">Availability:</span>
           <span style="${liveLotsStyle}">${liveLotsText}</span>
         </div>
-        <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; white-space: pre-line;">${rateDescHtml}</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.5; white-space: pre-line;">${rateDescHtml}${calcLogHtml}</div>
         <button onclick="launchDirections(${cp.lat}, ${cp.lng})" class="drive-btn" style="padding: 6px 12px; width: 100%; font-size: 12px;">
           <i class="fas fa-navigation"></i> Drive There
         </button>
