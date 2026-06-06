@@ -355,7 +355,11 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
       minsRemaining -= 1;
     }
   }
-  
+  if (slotCosts.length > 0) {
+    log.push(`${slotCosts.join(" + ")}`);
+  } else {
+    log.push(`$0.00`);
+  }
   log.push(`Total Computed Cost: $${totalCost.toFixed(2)}`);
   return { cost: totalCost, log: log };
 }
