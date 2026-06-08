@@ -217,9 +217,16 @@ function getRateBlock(rates, time) {
 
   const decimalTime = time.getHours() + time.getMinutes() / 60.0 + time.getSeconds() / 3600.0;
   for (const slot of dayRates) {
-    if (decimalTime >= slot.start && decimalTime < slot.end) return slot;
+    if (slot.end > slot.start) {
+      // Normal slot: e.g., 8-17 (8am to 5pm)
+      if (decimalTime >= slot.start && decimalTime < slot.end) return slot;
+    } else {
+      // Midnight-crossing slot: e.g., 17-3 (5pm to 3am next day)
+      if (decimalTime >= slot.start || decimalTime < slot.end) return slot;
+    }
   }
-  return dayRates[0]; // fallback
+  // No matching slot found — carpark is closed at this time
+  return null;
 }
 
 /**
@@ -248,9 +255,11 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   while (minsRemaining > 0) {
     const slot = getRateBlock(rates, currentTime);
     if (!slot) {
-      totalCost += 1.50; // flat fallback
-      slotCosts.push(`1.50 (Unknown block fallback)`);
-      break;
+      // Carpark is closed at this time — no charge, skip to next minute
+      slotCosts.push(`0.00 (Closed)`);
+      currentTime.setMinutes(currentTime.getMinutes() + 1);
+      minsRemaining -= 1;
+      continue;
     }
 
     let slotEndHour = Math.floor(slot.end);
@@ -258,9 +267,8 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     let slotEndTime = new Date(currentTime.getTime());
     slotEndTime.setHours(slotEndHour, slotEndMin, 0, 0);
     
-    // Roll over to next day if slot end is 24
-    if (slot.end === 24) {
-      slotEndTime.setHours(0, 0, 0, 0);
+    // Roll over to next day if slot end is 24 or if slot crosses midnight (end < start)
+    if (slot.end === 24 || slot.end < slot.start) {
       slotEndTime.setDate(slotEndTime.getDate() + 1);
     }
 
