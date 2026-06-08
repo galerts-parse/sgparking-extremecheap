@@ -283,6 +283,7 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
       let durationHours = timeToSpendInSlot / 60.0;
       let slotCost = 0.0;
       
+      // Determine the rate structure for this slot
       let firstHourCost = 0.0;
       let firstHourDuration = 0.0;
       let usedFirstHour = false;
@@ -297,43 +298,54 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
         usedFirstHour = true;
       }
       
-      if (durationHours <= firstHourDuration && usedFirstHour) {
+      // Determine the subsequent rate (after first hour)
+      let subsequentRate = null;  // { amount, intervalMinutes }
+      
+      if (slot.subsequent_30mins !== undefined) {
+        subsequentRate = { amount: slot.subsequent_30mins, intervalMinutes: 30 };
+      } else if (slot.subsequent_15mins !== undefined) {
+        subsequentRate = { amount: slot.subsequent_15mins, intervalMinutes: 15 };
+      } else if (slot.subsequent_10mins !== undefined) {
+        subsequentRate = { amount: slot.subsequent_10mins, intervalMinutes: 10 };
+      } else if (slot.per_hour !== undefined) {
+        subsequentRate = { amount: slot.per_hour, intervalMinutes: 60 };
+      } else if (slot.per_30mins !== undefined) {
+        subsequentRate = { amount: slot.per_30mins, intervalMinutes: 30 };
+      } else if (slot.per_15mins !== undefined) {
+        subsequentRate = { amount: slot.per_15mins, intervalMinutes: 15 };
+      } else if (slot.per_10mins !== undefined) {
+        subsequentRate = { amount: slot.per_10mins, intervalMinutes: 10 };
+      }
+      
+      if (usedFirstHour) {
+        // Has a first-hour rate
         slotCost = firstHourCost;
         slotCosts.push(`${firstHourCost.toFixed(2)} (1st Hr)`);
+        
+        const remainingHours = durationHours - firstHourDuration;
+        
+        if (remainingHours > 0 && subsequentRate) {
+          const remainingMinutes = remainingHours * 60;
+          const blocks = Math.ceil(remainingMinutes / subsequentRate.intervalMinutes);
+          const added = blocks * subsequentRate.amount;
+          slotCost += added;
+          if (blocks > 0) {
+            const intervalLabel = subsequentRate.intervalMinutes === 60 ? 'hr' : `${subsequentRate.intervalMinutes}min`;
+            slotCosts.push(`${subsequentRate.amount.toFixed(2)}*${blocks} (${intervalLabel})`);
+          }
+        }
+      } else if (subsequentRate) {
+        // No first-hour rate - flat rate from the start
+        const totalMinutes = durationHours * 60;
+        const blocks = Math.ceil(totalMinutes / subsequentRate.intervalMinutes);
+        slotCost = blocks * subsequentRate.amount;
+        
+        const intervalLabel = subsequentRate.intervalMinutes === 60 ? 'hr' : `${subsequentRate.intervalMinutes}min`;
+        slotCosts.push(`${subsequentRate.amount.toFixed(2)}*${blocks} (${intervalLabel})`);
       } else {
-        if (usedFirstHour) {
-          slotCost = firstHourCost;
-          slotCosts.push(`${firstHourCost.toFixed(2)} (1st Hr)`);
-        }
-        
-        const remainingHours = usedFirstHour ? durationHours - firstHourDuration : durationHours;
-        
-        if (slot.subsequent_30mins !== undefined) {
-          const blocks = Math.ceil(remainingHours * 2);
-          const added = blocks * slot.subsequent_30mins;
-          slotCost += added;
-          if (blocks > 0) slotCosts.push(`${slot.subsequent_30mins.toFixed(2)}*${blocks}`);
-        } else if (slot.subsequent_15mins !== undefined) {
-          const blocks = Math.ceil(remainingHours * 4);
-          const added = blocks * slot.subsequent_15mins;
-          slotCost += added;
-          if (blocks > 0) slotCosts.push(`${slot.subsequent_15mins.toFixed(2)}*${blocks}`);
-        } else if (slot.subsequent_10mins !== undefined) {
-          const blocks = Math.ceil(remainingHours * 6);
-          const added = blocks * slot.subsequent_10mins;
-          slotCost += added;
-          if (blocks > 0) slotCosts.push(`${slot.subsequent_10mins.toFixed(2)}*${blocks}`);
-        } else if (slot.per_hour !== undefined) {
-          const blocks = Math.ceil(remainingHours);
-          const added = blocks * slot.per_hour;
-          slotCost += added;
-          if (blocks > 0) slotCosts.push(`${slot.per_hour.toFixed(2)}*${blocks}`);
-        } else if (slot.per_30mins !== undefined) {
-          const blocks = Math.ceil(remainingHours * 2);
-          const added = blocks * slot.per_30mins;
-          slotCost += added;
-          if (blocks > 0) slotCosts.push(`${slot.per_30mins.toFixed(2)}*${blocks}`);
-        }
+        // No rate structure found - flat fallback
+        slotCost = 1.50;
+        slotCosts.push(`1.50 (No rate found)`);
       }
       
       if (slot.max_cap !== undefined && slotCost > slot.max_cap) {
