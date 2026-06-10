@@ -1961,11 +1961,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 20.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 20.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -1988,6 +1983,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -2010,6 +2010,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ]
     }
@@ -2494,11 +2499,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 14.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 14.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -2516,6 +2516,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 14.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 14.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -2528,6 +2533,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -2560,11 +2570,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 14.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 14.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -2582,6 +2587,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 14.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 14.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -2599,6 +2609,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 14.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 14.0,
+          "end": 7.0
         }
       ]
     }
@@ -2760,11 +2775,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 20.0,
           "end": 8.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 20.0,
-          "end": 8.0
         }
       ],
       "saturday": [
@@ -2782,6 +2792,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 8.0
         }
       ],
       "sunday": [
@@ -2799,6 +2814,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 8.0
         }
       ]
     }
@@ -2928,11 +2948,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 17.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 22.5,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -2950,6 +2965,16 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -3096,11 +3121,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 22.5,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 14.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -3118,6 +3138,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 14.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 14.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -3135,6 +3160,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 14.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 14.0,
+          "end": 7.0
         }
       ]
     }
@@ -3172,11 +3202,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 20.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 20.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -3199,6 +3224,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -3221,6 +3251,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ]
     }
@@ -3258,11 +3293,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 20.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 20.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -3285,6 +3315,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -3307,6 +3342,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 20.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 20.0,
+          "end": 7.0
         }
       ]
     }
@@ -3371,6 +3411,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -3393,6 +3438,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -4035,6 +4085,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 18.0,
           "end": 24,
           "per_entry": 3.0
+        },
+        {
+          "first_hour": 1.2,
+          "subsequent_15mins": 0.6,
+          "start": 7.0,
+          "end": 17.983333333333334
         }
       ],
       "saturday": [
@@ -4327,16 +4383,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 3.0,
           "start": 20.0,
           "end": 8.0
-        },
-        {
-          "per_30mins": 3.0,
-          "start": 8.0,
-          "end": 8.0
-        },
-        {
-          "per_30mins": 3.0,
-          "start": 8.0,
-          "end": 8.0
         }
       ],
       "saturday": [
@@ -4349,6 +4395,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 8.0,
           "end": 24,
           "per_30mins": 3.0
+        },
+        {
+          "per_30mins": 3.0,
+          "start": 8.0,
+          "end": 8.0
         }
       ],
       "sunday": [
@@ -4361,6 +4412,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 8.0,
           "end": 24,
           "per_30mins": 3.0
+        },
+        {
+          "per_30mins": 3.0,
+          "start": 8.0,
+          "end": 8.0
         }
       ]
     }
@@ -4393,16 +4449,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 17.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -4410,6 +4456,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 7.0,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -4417,6 +4468,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 7.0,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ]
     }
@@ -4805,11 +4861,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 14.0,
           "end": 6.5
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 8.5,
-          "end": 6.5
         }
       ],
       "saturday": [
@@ -4822,6 +4873,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 8.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 8.5,
+          "end": 6.5
         }
       ],
       "sunday": [
@@ -5030,6 +5086,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -5047,6 +5108,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -7877,16 +7943,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 19.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -7899,6 +7955,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -7911,6 +7972,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ]
     }
@@ -8692,11 +8758,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 19.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 22.0,
-          "end": 18.0
         }
       ],
       "saturday": [
@@ -8714,6 +8775,16 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.0,
+          "end": 18.0
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.0,
+          "end": 18.0
         }
       ],
       "sunday": [
@@ -8731,11 +8802,6 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.0,
           "end": 24,
           "per_30mins": 0.6
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 22.0,
-          "end": 18.0
         }
       ]
     }
@@ -12188,6 +12254,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 15.0,
           "end": 23.983333333333334,
           "per_entry": 3.75
+        },
+        {
+          "per_10mins": 1.07,
+          "start": 7.0,
+          "end": 14.983333333333334
         }
       ],
       "sunday": [
@@ -12412,6 +12483,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.535
+        },
+        {
+          "per_30mins": 0.535,
+          "start": 7.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -12424,6 +12500,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.535
+        },
+        {
+          "per_30mins": 0.535,
+          "start": 7.0,
+          "end": 7.0
         }
       ]
     }
@@ -13230,11 +13311,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 17.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 22.5,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -13252,6 +13328,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -13269,6 +13350,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -13349,11 +13435,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.5,
           "start": 22.5,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.5,
-          "start": 22.5,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -13371,6 +13452,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.5
+        },
+        {
+          "per_30mins": 0.5,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -13388,6 +13474,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.5
+        },
+        {
+          "per_30mins": 0.5,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -13501,16 +13592,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 17.5,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 7.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -13523,6 +13604,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -13535,6 +13621,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 7.0,
+          "end": 7.0
         }
       ]
     }
@@ -14094,6 +14185,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 18,
           "end": 24,
           "per_entry": 3.0
+        },
+        {
+          "first_hour": 2.0,
+          "subsequent_30mins": 1.5,
+          "start": 22.0,
+          "end": 7.983333333333333
         }
       ],
       "saturday": [
@@ -17141,6 +17238,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -17158,6 +17260,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -17827,11 +17934,6 @@ const COMMERCIAL_CARPARKS = [
           "start": 18.0,
           "end": 24,
           "per_hour": 1.6
-        },
-        {
-          "per_30mins": 0.8,
-          "start": 13.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -17849,6 +17951,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 13.0,
           "end": 24,
           "per_30mins": 0.8
+        },
+        {
+          "per_30mins": 0.8,
+          "start": 13.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -18440,6 +18547,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 18,
           "end": 24,
           "per_entry": 3.21
+        },
+        {
+          "first_120mins": 3.21,
+          "subsequent_15mins": 0.54,
+          "start": 18.0,
+          "end": 7.983333333333333
         }
       ],
       "saturday": [
@@ -21214,6 +21327,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -21231,6 +21349,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 22.5,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 22.5,
+          "end": 7.0
         }
       ]
     }
@@ -25908,11 +26031,6 @@ const COMMERCIAL_CARPARKS = [
           "start": 18.0,
           "end": 24,
           "per_hour": 1.6
-        },
-        {
-          "per_30mins": 0.8,
-          "start": 13.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -25930,6 +26048,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 13.0,
           "end": 24,
           "per_30mins": 0.8
+        },
+        {
+          "per_30mins": 0.8,
+          "start": 13.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -26372,11 +26495,6 @@ const COMMERCIAL_CARPARKS = [
           "per_30mins": 0.6,
           "start": 21.0,
           "end": 7.0
-        },
-        {
-          "per_30mins": 0.6,
-          "start": 17.0,
-          "end": 7.0
         }
       ],
       "saturday": [
@@ -26394,6 +26512,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 17.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 17.0,
+          "end": 7.0
         }
       ],
       "sunday": [
@@ -26411,6 +26534,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 17.0,
           "end": 24,
           "per_30mins": 0.6
+        },
+        {
+          "per_30mins": 0.6,
+          "start": 17.0,
+          "end": 7.0
         }
       ]
     }
@@ -27711,6 +27839,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 13.5,
           "end": 23.0,
           "per_entry": 1.6
+        },
+        {
+          "per_15mins": 0.45,
+          "start": 6.0,
+          "end": 13.5
         }
       ],
       "sunday": [
@@ -30722,6 +30855,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 17.0,
           "end": 24,
           "per_entry": 2.68
+        },
+        {
+          "first_120mins": 1.18,
+          "subsequent_30mins": 0.64,
+          "start": 8.0,
+          "end": 17.0
         }
       ],
       "saturday": [
@@ -36889,16 +37028,6 @@ const COMMERCIAL_CARPARKS = [
           "start": 18.0,
           "end": 24,
           "per_entry": 2.57
-        },
-        {
-          "per_30mins": 2.57,
-          "start": 7.0,
-          "end": 6.983333333333333
-        },
-        {
-          "per_30mins": 2.57,
-          "start": 7.0,
-          "end": 6.983333333333333
         }
       ],
       "saturday": [
@@ -36911,6 +37040,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 2.57
+        },
+        {
+          "per_30mins": 2.57,
+          "start": 7.0,
+          "end": 6.983333333333333
         }
       ],
       "sunday": [
@@ -36923,6 +37057,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 2.57
+        },
+        {
+          "per_30mins": 2.57,
+          "start": 7.0,
+          "end": 6.983333333333333
         }
       ]
     }
@@ -37100,16 +37239,6 @@ const COMMERCIAL_CARPARKS = [
           "start": 18.0,
           "end": 24,
           "per_entry": 2.57
-        },
-        {
-          "per_30mins": 2.57,
-          "start": 7.0,
-          "end": 6.983333333333333
-        },
-        {
-          "per_30mins": 2.57,
-          "start": 7.0,
-          "end": 6.983333333333333
         }
       ],
       "saturday": [
@@ -37122,6 +37251,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 2.57
+        },
+        {
+          "per_30mins": 2.57,
+          "start": 7.0,
+          "end": 6.983333333333333
         }
       ],
       "sunday": [
@@ -37134,6 +37268,11 @@ const COMMERCIAL_CARPARKS = [
           "start": 7.0,
           "end": 24,
           "per_30mins": 2.57
+        },
+        {
+          "per_30mins": 2.57,
+          "start": 7.0,
+          "end": 6.983333333333333
         }
       ]
     }
@@ -40456,6 +40595,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 18,
           "end": 24,
           "per_entry": 4.83
+        },
+        {
+          "first_120mins": 3.21,
+          "subsequent_30mins": 1.07,
+          "start": 18.0,
+          "end": 8.0
         }
       ],
       "saturday": [
@@ -41146,6 +41291,12 @@ const COMMERCIAL_CARPARKS = [
           "start": 17.0,
           "end": 24,
           "per_entry": 2.2
+        },
+        {
+          "first_120mins": 2.2,
+          "subsequent_30mins": 1.1,
+          "start": 7.0,
+          "end": 17.0
         }
       ],
       "saturday": [
