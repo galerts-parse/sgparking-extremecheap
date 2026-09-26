@@ -225,8 +225,16 @@ function getRateBlock(rates, time) {
       if (decimalTime >= slot.start || decimalTime < slot.end) return slot;
     }
   }
-  // No matching slot found — carpark is closed at this time
   return null;
+}
+
+function formatHour(decimalH) {
+  const h = Math.floor(decimalH);
+  const m = Math.round((decimalH - h) * 60);
+  const ampm = h >= 12 && h < 24 ? 'PM' : 'AM';
+  const displayH = h % 12 === 0 ? 12 : h % 12;
+  const displayM = m > 0 ? `:${m.toString().padStart(2, '0')}` : '';
+  return `${displayH}${displayM}${ampm}`;
 }
 
 /**
@@ -234,7 +242,7 @@ function getRateBlock(rates, time) {
  * @param {Object} carpark - Commercial carpark record
  * @param {Date} arrivalTime - Date object representing arrival time
  * @param {number} durationMins - Estimated duration in minutes
- * @returns {Object} { cost, log }
+ * @returns {Object} { cost, isClosed, log }
  */
 function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   const rates = carpark.rates;
@@ -243,7 +251,7 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   if (!rates) {
     const cost = 1.20 * Math.ceil(durationMins / 60);
     log.push(`1.20*${Math.ceil(durationMins / 60)} (Fallback flat rate) = $${cost.toFixed(2)}`);
-    return { cost, log };
+    return { cost, isClosed: false, log };
   }
   
   let totalCost = 0.0;
@@ -251,15 +259,18 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
   let minsRemaining = durationMins;
   
   let slotCosts = [];
+  const chargedEntryGroups = {};
   
   while (minsRemaining > 0) {
     const slot = getRateBlock(rates, currentTime);
-    if (!slot) {
-      // Carpark is closed at this time — no charge, skip to next minute
-      slotCosts.push(`0.00 (Closed)`);
-      currentTime.setMinutes(currentTime.getMinutes() + 1);
-      minsRemaining -= 1;
-      continue;
+    
+    // Check if carpark is closed or outside operating hours
+    if (!slot || slot.closed) {
+      const closeMsg = slot && slot.closed
+        ? `Carpark is closed from ${formatHour(slot.start)} to ${formatHour(slot.end)}`
+        : `Carpark is closed / outside operating hours at ${currentTime.getHours().toString().padStart(2, '0')}:${currentTime.getMinutes().toString().padStart(2, '0')}`;
+      log.push(`[Closed] ${closeMsg}`);
+      return { cost: null, isClosed: true, log: log };
     }
 
     let slotEndHour = Math.floor(slot.end);
@@ -284,32 +295,42 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     let timeToSpendInSlot = Math.min(minsInSlot, minsRemaining);
     
     // Calculate cost for timeToSpendInSlot using this slot's rules
-    if (slot.per_entry !== undefined) {
-      totalCost += slot.per_entry;
-      slotCosts.push(`${slot.per_entry.toFixed(2)} (Per Entry)`);
+    if (slot.free) {
+      slotCosts.push(`Free`);
+    } else if (slot.per_entry !== undefined) {
+      const entryKey = slot.entry_group || `entry_${slot.start}_${slot.end}`;
+      if (!chargedEntryGroups[entryKey]) {
+        totalCost += slot.per_entry;
+        chargedEntryGroups[entryKey] = true;
+        slotCosts.push(`${slot.per_entry.toFixed(2)} (Per Entry)`);
+      }
     } else {
       let durationHours = timeToSpendInSlot / 60.0;
       let slotCost = 0.0;
       
-      // Determine the rate structure for this slot
-      let firstHourCost = 0.0;
-      let firstHourDuration = 0.0;
-      let usedFirstHour = false;
+      let initCost = 0.0;
+      let initDuration = 0.0;
+      let usedInit = false;
       
-      if (slot.first_hour !== undefined) {
-        firstHourCost = slot.first_hour;
-        firstHourDuration = 1.0;
-        usedFirstHour = true;
+      if (slot.first_hours !== undefined) {
+        initCost = slot.first_hours_cost;
+        initDuration = slot.first_hours;
+        usedInit = true;
+      } else if (slot.first_hour !== undefined) {
+        initCost = slot.first_hour;
+        initDuration = 1.0;
+        usedInit = true;
       } else if (slot.first_90mins !== undefined) {
-        firstHourCost = slot.first_90mins;
-        firstHourDuration = 1.5;
-        usedFirstHour = true;
+        initCost = slot.first_90mins;
+        initDuration = 1.5;
+        usedInit = true;
       }
       
-      // Determine the subsequent rate (after first hour)
-      let subsequentRate = null;  // { amount, intervalMinutes }
-      
-      if (slot.subsequent_30mins !== undefined) {
+      // Determine the subsequent rate
+      let subsequentRate = null; // { amount, intervalMinutes }
+      if (slot.subsequent_hour !== undefined) {
+        subsequentRate = { amount: slot.subsequent_hour, intervalMinutes: 60 };
+      } else if (slot.subsequent_30mins !== undefined) {
         subsequentRate = { amount: slot.subsequent_30mins, intervalMinutes: 30 };
       } else if (slot.subsequent_15mins !== undefined) {
         subsequentRate = { amount: slot.subsequent_15mins, intervalMinutes: 15 };
@@ -325,13 +346,13 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
         subsequentRate = { amount: slot.per_10mins, intervalMinutes: 10 };
       }
       
-      if (usedFirstHour) {
-        // Has a first-hour rate
-        slotCost = firstHourCost;
-        slotCosts.push(`${firstHourCost.toFixed(2)} (1st Hr)`);
+      const label = initDuration === 1.0 ? '1st Hr' : (initDuration === 2.0 ? '1st 2hr' : (initDuration === 3.0 ? '1st 3hr' : `1st ${initDuration}h`));
+      
+      if (usedInit) {
+        slotCost = initCost;
+        slotCosts.push(`${initCost.toFixed(2)} (${label})`);
         
-        const remainingHours = durationHours - firstHourDuration;
-        
+        const remainingHours = durationHours - initDuration;
         if (remainingHours > 0 && subsequentRate) {
           const remainingMinutes = remainingHours * 60;
           const blocks = Math.ceil(remainingMinutes / subsequentRate.intervalMinutes);
@@ -343,23 +364,19 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
           }
         }
       } else if (subsequentRate) {
-        // No first-hour rate - flat rate from the start
         const totalMinutes = durationHours * 60;
         const blocks = Math.ceil(totalMinutes / subsequentRate.intervalMinutes);
         slotCost = blocks * subsequentRate.amount;
-        
         const intervalLabel = subsequentRate.intervalMinutes === 60 ? 'hr' : `${subsequentRate.intervalMinutes}min`;
         slotCosts.push(`${subsequentRate.amount.toFixed(2)}*${blocks} (${intervalLabel})`);
       } else {
-        // No rate structure found - flat fallback
         slotCost = 1.50;
-        slotCosts.push(`1.50 (No rate found)`);
+        slotCosts.push(`1.50 (Fallback)`);
       }
       
       if (slot.max_cap !== undefined && slotCost > slot.max_cap) {
         slotCost = slot.max_cap;
-        // Adjust array if capping (this is a simplification for logging format)
-        slotCosts = slotCosts.filter(s => !s.includes("1st Hr") && !s.includes("*"));
+        slotCosts = slotCosts.filter(s => !s.includes("1st") && !s.includes("*"));
         slotCosts.push(`${slot.max_cap.toFixed(2)} (Max Cap)`);
       }
       
@@ -375,13 +392,13 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
       minsRemaining -= 1;
     }
   }
+  
   if (slotCosts.length > 0) {
-    log.push(`${slotCosts.join(" + ")}`);
+    log.push(`${slotCosts.join(" + ")} = $${totalCost.toFixed(2)}`);
   } else {
     log.push(`$0.00`);
   }
-  log.push(`Total Computed Cost: $${totalCost.toFixed(2)}`);
-  return { cost: totalCost, log: log };
+  return { cost: totalCost, isClosed: false, log: log };
 }
 
 /**

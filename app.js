@@ -741,11 +741,13 @@ function performCalculation() {
       if (dist <= 1000) {
         // Calculate Price
         const costResult = calculateCarparkCost(cp, state.arrivalTime, state.duration);
+        const isClosed = !!costResult.isClosed;
         
         results.push({
           ...cp,
           distance: dist,
-          price: costResult.cost !== undefined ? costResult.cost : 0,
+          isClosed: isClosed,
+          price: isClosed ? 9999 : (costResult.cost !== undefined && costResult.cost !== null ? costResult.cost : 0),
           pricingLog: costResult.log || []
         });
       }
@@ -779,19 +781,24 @@ function renderCarparkMarkers() {
 
   if (state.searchResults.length === 0) return;
 
-  // Identify cheapest price in results to highlight it
-  const minPrice = Math.min(...state.searchResults.map(r => r.price));
+  // Identify cheapest price in results to highlight it (excluding closed)
+  const openResults = state.searchResults.filter(r => !r.isClosed);
+  const minPrice = openResults.length > 0 ? Math.min(...openResults.map(r => r.price)) : 9999;
 
   state.searchResults.forEach(cp => {
-    const isCheapest = cp.price === minPrice && cp.price > 0;
+    const isCheapest = !cp.isClosed && cp.price === minPrice && cp.price > 0;
     
     // Create gorgeous custom price-badge marker
-    const priceText = cp.price === 0 ? "Free" : `$${cp.price.toFixed(2)}`;
+    const priceText = cp.isClosed ? "Closed" : (cp.price === 0 ? "Free" : `$${cp.price.toFixed(2)}`);
     
-    const badgeClass = isCheapest ? "map-badge cheap" : "map-badge";
-    const badgeHtml = isCheapest 
-      ? `<div class="${badgeClass}"><i class="fas fa-tags"></i> ${priceText}</div>`
-      : `<div class="${badgeClass}">${priceText}</div>`;
+    const badgeClass = cp.isClosed 
+      ? "map-badge closed" 
+      : (isCheapest ? "map-badge cheap" : "map-badge");
+    const badgeHtml = cp.isClosed
+      ? `<div class="${badgeClass}"><i class="fas fa-ban"></i> ${priceText}</div>`
+      : (isCheapest 
+        ? `<div class="${badgeClass}"><i class="fas fa-tags"></i> ${priceText}</div>`
+        : `<div class="${badgeClass}">${priceText}</div>`);
 
     const customIcon = L.divIcon({
       className: 'custom-div-icon',
@@ -814,9 +821,9 @@ function renderCarparkMarkers() {
       : '';
     
     const live = state.liveLots && state.liveLots[cp.no];
-    let liveLotsText = 'Pricing Computed';
-    let liveLotsStyle = 'color: var(--text-secondary);';
-    if (live) {
+    let liveLotsText = cp.isClosed ? 'Closed' : 'Pricing Computed';
+    let liveLotsStyle = cp.isClosed ? 'color: var(--accent-red); font-weight: 700;' : 'color: var(--text-secondary);';
+    if (live && !cp.isClosed) {
       if (live.available === 0) {
         liveLotsText = 'Full';
         liveLotsStyle = 'color: var(--accent-red); font-weight: 700;';
@@ -826,12 +833,16 @@ function renderCarparkMarkers() {
       }
     }
     
+    const popupPriceHtml = cp.isClosed 
+      ? `<span style="font-weight: 800; color: var(--accent-red); font-size: 16px;"><i class="fas fa-ban"></i> Closed</span>`
+      : `<span style="font-weight: 800; color: var(--accent-green); font-size: 16px;">${priceText}</span>`;
+
     const popupContent = `
       <div style="font-family: var(--font-family); padding: 4px; max-width: 260px;">
         <h4 style="font-weight: 700; color: var(--text-primary); margin-bottom: 2px;">${cp.name || cp.addr}</h4>
         <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">${cp.addr}</p>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <span style="font-weight: 800; color: var(--accent-green); font-size: 16px;">${priceText}</span>
+          ${popupPriceHtml}
           <span style="font-size: 12px; color: var(--text-secondary);"><i class="fas fa-walking"></i> ${walkLabel}</span>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 11px;">
@@ -886,15 +897,17 @@ function renderCarparkList() {
   // Sort search results
   let sorted = [...state.searchResults];
   if (state.sortKey === 'price') {
-    sorted.sort((a, b) => a.price - b.price);
+    sorted.sort((a, b) => (a.isClosed ? 1 : 0) - (b.isClosed ? 1 : 0) || a.price - b.price);
   } else if (state.sortKey === 'distance') {
-    sorted.sort((a, b) => a.distance - b.distance);
+    sorted.sort((a, b) => (a.isClosed ? 1 : 0) - (b.isClosed ? 1 : 0) || a.distance - b.distance);
   } else if (state.sortKey === 'smart') {
     // Smart Balance Score: Normalized Price (weight 0.6) + Normalized Walking Distance (weight 0.4)
-    const maxPrice = Math.max(...sorted.map(r => r.price)) || 1.0;
+    const openList = sorted.filter(r => !r.isClosed);
+    const maxPrice = openList.length > 0 ? (Math.max(...openList.map(r => r.price)) || 1.0) : 1.0;
     const maxDist = Math.max(...sorted.map(r => r.distance)) || 1.0;
 
     sorted.sort((a, b) => {
+      if (a.isClosed !== b.isClosed) return a.isClosed ? 1 : -1;
       const scoreA = (a.price / maxPrice) * 0.6 + (a.distance / maxDist) * 0.4;
       const scoreB = (b.price / maxPrice) * 0.6 + (b.distance / maxDist) * 0.4;
       return scoreA - scoreB;
@@ -906,17 +919,20 @@ function renderCarparkList() {
   // Render cards
   sorted.forEach(cp => {
     const card = document.createElement('div');
-    card.className = 'carpark-card';
+    card.className = cp.isClosed ? 'carpark-card carpark-closed' : 'carpark-card';
     
     const isCommercial = cp.no.startsWith("COMM_");
     const cpName = isCommercial ? cp.name : cp.addr;
-    const priceText = cp.price === 0 ? "Free" : `$${cp.price.toFixed(2)}`;
+    const priceText = cp.isClosed ? "Closed" : (cp.price === 0 ? "Free" : `$${cp.price.toFixed(2)}`);
+    const priceStyle = cp.isClosed ? "color: var(--accent-red); font-weight: 800; font-size: 15px;" : "";
     
     // Dynamic real-time lots badge
     let lotsHtml = '';
     const live = state.liveLots && state.liveLots[cp.no];
     
-    if (live) {
+    if (cp.isClosed) {
+      lotsHtml = `<span class="lots-badge lots-red"><i class="fas fa-ban"></i> Closed</span>`;
+    } else if (live) {
       const avail = live.available;
       const total = live.total;
       const pct = total > 0 ? (avail / total) * 100 : 0;
@@ -939,7 +955,7 @@ function renderCarparkList() {
           <span class="card-address">${cp.addr}</span>
         </div>
         <div class="card-price-badge">
-          <span class="total-price">${priceText}</span>
+          <span class="total-price" style="${priceStyle}">${priceText}</span>
           <span class="rate-badge">${isCommercial ? 'Commercial' : 'HDB Public'}</span>
         </div>
       </div>
