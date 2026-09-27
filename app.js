@@ -58,9 +58,12 @@ function buildRateDesc(cp) {
     return cp.rates_text;
   }
   if (!cp.rates) {
-    return cp.no.startsWith('COMM_')
-      ? 'Commercial – rates unavailable'
-      : `HDB Public (Night Cap: ${cp.night || 'N'}, Free FPS: ${cp.free || 'N/A'})`;
+    if (cp.no.startsWith('COMM_')) return 'Commercial – rates unavailable';
+    const fpsText = (cp.free && cp.free !== 'NO') 
+      ? `Sunday Free Parking: YES (${cp.free})`
+      : 'Sunday Free Parking: NO (Standard rates apply all day)';
+    const nightText = cp.night === 'YES' ? 'Night Parking: $5.00 Cap (10:30pm–7:00am)' : 'Night Parking: No Cap';
+    return `HDB Public Carpark\nRate: $0.60/30min (Central $1.20/30min)\n${fpsText}\n${nightText}`;
   }
   // Auto-generate from the structured rates object
   const lines = [];

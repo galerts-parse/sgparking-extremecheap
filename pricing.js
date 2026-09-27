@@ -42,9 +42,10 @@ function calculateHDBRate(carpark, arrivalTime, durationMins) {
     // Typically: Sundays & Public Holidays from 7:00 AM to 10:30 PM (22:30)
     let isFreeParking = false;
     if (carpark.free && carpark.free.includes("SUN & PH")) {
-      if (dayOfWeek === 0) { // Sunday (For MVP, Sunday represents holidays too)
+      if (dayOfWeek === 0) { // Sunday
         const currentHourMin = hour + currentTime.getMinutes() / 60;
-        if (currentHourMin >= 7.0 && currentHourMin < 22.5) {
+        const freeStartH = carpark.free.includes("1PM") ? 13.0 : 7.0;
+        if (currentHourMin >= freeStartH && currentHourMin < 22.5) {
           isFreeParking = true;
         }
       }
@@ -129,7 +130,8 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
     // 1. Check Free Parking
     let isFree = false;
     if (carpark.free && carpark.free.includes("SUN & PH") && dayOfWeek === 0) {
-      if (minutesIntoDay >= 420 && minutesIntoDay < 1350) { // 7am to 10:30pm
+      const freeStartMin = carpark.free.includes("1PM") ? 780 : 420;
+      if (minutesIntoDay >= freeStartMin && minutesIntoDay < 1350) { // until 10:30pm
         isFree = true;
       }
     }
@@ -195,10 +197,18 @@ function calculateHDBRatePrecise(carpark, arrivalTime, durationMins, inCentral) 
   if (nightBlocks > 0) formulaParts.push(`0.60*${nightBlocks} (Night)`);
   if (nightCaps > 0) formulaParts.push(`5.00*${nightCaps} (Night Cap)`);
   
+  const isSunday = arrivalTime.getDay() === 0;
   if (formulaParts.length > 0) {
-    log.push(`${formulaParts.join(" + ")} = $${totalCost.toFixed(2)}`);
+    let logStr = `${formulaParts.join(" + ")} = $${totalCost.toFixed(2)}`;
+    if (isSunday && (!carpark.free || carpark.free === "NO")) {
+      logStr += ` (No Sunday Free Parking at this carpark)`;
+    } else if (freeBlocks > 0) {
+      logStr += ` [Free FPS: ${freeBlocks * 30} mins]`;
+    }
+    log.push(logStr);
   } else if (freeBlocks > 0) {
-    log.push(`Free Parking = $0.00`);
+    const fpsDesc = carpark.free && carpark.free.includes("1PM") ? "Sun 1pm–10:30pm" : "Sun 7am–10:30pm";
+    log.push(`Free Parking (HDB Free Parking Scheme: ${fpsDesc}) = $0.00`);
   } else {
     log.push(`$0.00`);
   }
