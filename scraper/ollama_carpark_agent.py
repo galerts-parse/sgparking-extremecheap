@@ -103,11 +103,28 @@ Output strict JSON representation of the rates for weekday, saturday, sunday.
         return result
     return None
 
+CACHE_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "commercial_carparks_llm_cache.json")
+
+def load_cache():
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_cache(cache):
+    with open(CACHE_FILE, "w") as f:
+        json.dump(cache, f, indent=2)
+
 if __name__ == "__main__":
     data_path = os.path.join(os.path.dirname(__file__), "..", "data", "commercial_carparks.js")
     with open(data_path, "r") as f:
         content = f.read()
     carparks = json.loads(re.search(r'COMMERCIAL_CARPARKS\s*=\s*(\[[\s\S]*\]);', content).group(1))
+    
+    cache = load_cache()
     
     # Check command line args
     if len(sys.argv) > 1 and sys.argv[1] == "--test":
@@ -115,21 +132,58 @@ if __name__ == "__main__":
         print(f"Testing on {test_cp['name']}...")
         parsed = parse_carpark_with_agent(test_cp)
         print("Result:", json.dumps(parsed, indent=2))
-    elif len(sys.argv) > 1 and sys.argv[1] == "--batch":
-        limit = int(sys.argv[2]) if len(sys.argv) > 2 else 10
-        print(f"Running agent on {limit} commercial carparks...")
+    elif len(sys.argv) > 1 and sys.argv[1] in ["--batch", "--all"]:
+        is_all = sys.argv[1] == "--all"
+        limit = len(carparks) if is_all else (int(sys.argv[2]) if len(sys.argv) > 2 else 10)
+        print(f"Running agent on {limit} commercial carparks (Cached already: {len(cache)})...")
         success = 0
+        skipped = 0
+        
         for i, cp in enumerate(carparks[:limit]):
+            name = cp.get("name", "")
             if not cp.get("rates_text"):
                 continue
-            print(f"[{i+1}/{limit}] Parsing {cp['name']}...")
+            if name in cache:
+                skipped += 1
+                continue
+                
+            print(f"[{i+1}/{limit}] Parsing '{name}' via Ollama...")
             res = parse_carpark_with_agent(cp)
             if res:
-                cp["rates"] = res
+                cache[name] = res
+                save_cache(cache)
                 success += 1
-                print(f"  ✓ Success")
+                print(f"  ✓ Saved to cache ({len(cache)} total cached)")
             else:
                 print(f"  ✗ Failed/Skipped")
-        print(f"Batch complete: {success}/{limit} updated.")
+                
+        print(f"Run complete. New parsed: {success}, Skipped (already cached): {skipped}, Total cache: {len(cache)}")
+        
+        # Apply to commercial_carparks.js if requested or all done
+        if "--apply" in sys.argv:
+            applied = 0
+            for cp in carparks:
+                if cp.get("name") in cache:
+                    cp["rates"] = cache[cp["name"]]
+                    applied += 1
+            new_content = f"// Singapore Commercial Carpark Rates Database (AI/LLM-parsed)\nconst COMMERCIAL_CARPARKS = {json.dumps(carparks, indent=2)};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = { COMMERCIAL_CARPARKS };\n}}\n"
+            with open(data_path, "w") as f:
+                f.write(new_content)
+            print(f"Applied {applied} cached rate structures to {data_path}")
+    elif len(sys.argv) > 1 and sys.argv[1] == "--apply":
+        applied = 0
+        for cp in carparks:
+            if cp.get("name") in cache:
+                cp["rates"] = cache[cp["name"]]
+                applied += 1
+        new_content = f"// Singapore Commercial Carpark Rates Database (AI/LLM-parsed)\nconst COMMERCIAL_CARPARKS = {json.dumps(carparks, indent=2)};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = { COMMERCIAL_CARPARKS };\n}}\n"
+        with open(data_path, "w") as f:
+            f.write(new_content)
+        print(f"Applied {applied} cached rate structures to {data_path}")
     else:
-        print("Usage: python3 ollama_carpark_agent.py [--test | --batch <num>]")
+        print("Usage:")
+        print("  python3 ollama_carpark_agent.py --test")
+        print("  python3 ollama_carpark_agent.py --batch <num> [--apply]")
+        print("  python3 ollama_carpark_agent.py --all [--apply]")
+        print("  python3 ollama_carpark_agent.py --apply")
+
