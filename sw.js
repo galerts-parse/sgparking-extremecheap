@@ -1,5 +1,5 @@
 // SG ParkExtreme Cheap - PWA Service Worker
-const CACHE_NAME = 'sg-park-cache-v3';
+const CACHE_NAME = 'sg-park-cache-v4';
 const ASSETS = [
   'index.html',
   'index.css',
@@ -48,9 +48,9 @@ self.addEventListener('fetch', (e) => {
   // Only cache GET requests
   if (e.request.method !== 'GET') return;
   
-  // Skip external APIs (OSM, Data.gov.sg, OSRM) to ensure they always get real-time info
+  // Skip external APIs and map tiles to ensure they always get real-time info and don't bloat cache
   const url = e.request.url;
-  if (url.includes('api.data.gov.sg') || url.includes('nominatim.openstreetmap.org') || url.includes('project-osrm.org')) {
+  if (url.includes('api.data.gov.sg') || url.includes('nominatim.openstreetmap.org') || url.includes('project-osrm.org') || url.includes('tile.openstreetmap.org')) {
     e.respondWith(fetch(e.request));
     return;
   }

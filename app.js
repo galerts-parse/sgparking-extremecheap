@@ -140,11 +140,10 @@ function initMap() {
     position: 'topright'
   }).addTo(state.map);
 
-  // Add CartoDB Positron tiles (beautiful minimalist light grey theme)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    subdomains: 'abcd',
-    maxZoom: 20
+  // Add OpenStreetMap tiles (free, reliable, no API key required)
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   }).addTo(state.map);
 }
 
