@@ -1,5 +1,5 @@
 // SG ParkExtreme Cheap - PWA Service Worker
-const CACHE_NAME = 'sg-park-cache-v4';
+const CACHE_NAME = 'sg-park-cache-v5';
 const ASSETS = [
   'index.html',
   'index.css',

@@ -288,8 +288,8 @@ function calculateCommercialRate(carpark, arrivalTime, durationMins) {
     let slotEndTime = new Date(currentTime.getTime());
     slotEndTime.setHours(slotEndHour, slotEndMin, 0, 0);
     
-    // Roll over to next day if slot end is 24 or if slot crosses midnight (end < start)
-    if (slot.end === 24 || slot.end < slot.start) {
+    // Roll over to next day if slot end is 24 or if slot crosses midnight (end <= start)
+    if (slot.end === 24 || slot.end <= slot.start) {
       slotEndTime.setDate(slotEndTime.getDate() + 1);
     }
 

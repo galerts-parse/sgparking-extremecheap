@@ -36,7 +36,10 @@ And one or more of these pricing properties:
   - "closed": true (if carpark is closed during this time)
   - "free": true (if parking is free)
 
-Return ONLY valid JSON. No markdown backticks, no explanatory text.
+Important Rules:
+- If a rate covers the full day / 24 hours (e.g. "7am to 7am following day" or "all day"), set "start": 0.0 and "end": 24.0. Do NOT set start and end to the exact same number.
+- For overnight flat rates crossing midnight (e.g. 6pm to 7am), use "entry_group": "overnight".
+- Return ONLY valid JSON. No markdown, no commentary.
 """
 
 def call_ollama(prompt, retries=2):
@@ -134,30 +137,40 @@ if __name__ == "__main__":
         print("Result:", json.dumps(parsed, indent=2))
     elif len(sys.argv) > 1 and sys.argv[1] in ["--batch", "--all"]:
         is_all = sys.argv[1] == "--all"
-        limit = len(carparks) if is_all else (int(sys.argv[2]) if len(sys.argv) > 2 else 10)
-        print(f"Running agent on {limit} commercial carparks (Cached already: {len(cache)})...")
+        valid_cps = [cp for cp in carparks if cp.get("rates_text")]
+        limit = len(valid_cps) if is_all else (int(sys.argv[2]) if len(sys.argv) > 2 else 10)
+        print(f"Running agent on {limit} commercial carparks (Total available: {len(valid_cps)}, Cached already: {len(cache)})...")
         success = 0
         skipped = 0
         
-        for i, cp in enumerate(carparks[:limit]):
+        for i, cp in enumerate(valid_cps[:limit]):
             name = cp.get("name", "")
-            if not cp.get("rates_text"):
-                continue
             if name in cache:
                 skipped += 1
                 continue
                 
-            print(f"[{i+1}/{limit}] Parsing '{name}' via Ollama...")
+            print(f"[{i+1}/{limit}] Parsing '{name}' via Ollama...", flush=True)
             res = parse_carpark_with_agent(cp)
             if res:
                 cache[name] = res
                 save_cache(cache)
                 success += 1
-                print(f"  ✓ Saved to cache ({len(cache)} total cached)")
-            else:
-                print(f"  ✗ Failed/Skipped")
+                print(f"  ✓ Saved to cache ({len(cache)} total cached)", flush=True)
                 
-        print(f"Run complete. New parsed: {success}, Skipped (already cached): {skipped}, Total cache: {len(cache)}")
+                # Checkpoint apply every 10 items
+                if "--apply" in sys.argv and success % 10 == 0:
+                    for c in carparks:
+                        if c.get("name") in cache:
+                            c["rates"] = cache[c["name"]]
+                    dumped = json.dumps(carparks, indent=2)
+                    new_content = f"// SG ParkExtreme Cheap - Merged Curated and Scraped Private Parking Database\n// Total Commercial Carparks: {len(carparks)}\n\nconst COMMERCIAL_CARPARKS = {dumped};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = {{ COMMERCIAL_CARPARKS }};\n}}\n"
+                    with open(data_path, "w") as f:
+                        f.write(new_content)
+                    print(f"  [Auto-applied checkpoint to commercial_carparks.js]", flush=True)
+            else:
+                print(f"  ✗ Failed/Skipped", flush=True)
+                
+        print(f"Run complete. New parsed: {success}, Skipped (already cached): {skipped}, Total cache: {len(cache)}", flush=True)
         
         # Apply to commercial_carparks.js if requested or all done
         if "--apply" in sys.argv:
@@ -166,20 +179,22 @@ if __name__ == "__main__":
                 if cp.get("name") in cache:
                     cp["rates"] = cache[cp["name"]]
                     applied += 1
-            new_content = f"// Singapore Commercial Carpark Rates Database (AI/LLM-parsed)\nconst COMMERCIAL_CARPARKS = {json.dumps(carparks, indent=2)};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = { COMMERCIAL_CARPARKS };\n}}\n"
+            dumped = json.dumps(carparks, indent=2)
+            new_content = f"// SG ParkExtreme Cheap - Merged Curated and Scraped Private Parking Database\n// Total Commercial Carparks: {len(carparks)}\n\nconst COMMERCIAL_CARPARKS = {dumped};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = {{ COMMERCIAL_CARPARKS }};\n}}\n"
             with open(data_path, "w") as f:
                 f.write(new_content)
-            print(f"Applied {applied} cached rate structures to {data_path}")
+            print(f"Applied {applied} cached rate structures to {data_path}", flush=True)
     elif len(sys.argv) > 1 and sys.argv[1] == "--apply":
         applied = 0
         for cp in carparks:
             if cp.get("name") in cache:
                 cp["rates"] = cache[cp["name"]]
                 applied += 1
-        new_content = f"// Singapore Commercial Carpark Rates Database (AI/LLM-parsed)\nconst COMMERCIAL_CARPARKS = {json.dumps(carparks, indent=2)};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = { COMMERCIAL_CARPARKS };\n}}\n"
+        dumped = json.dumps(carparks, indent=2)
+        new_content = f"// SG ParkExtreme Cheap - Merged Curated and Scraped Private Parking Database\n// Total Commercial Carparks: {len(carparks)}\n\nconst COMMERCIAL_CARPARKS = {dumped};\n\nif (typeof module !== 'undefined' && module.exports) {{\n  module.exports = {{ COMMERCIAL_CARPARKS }};\n}}\n"
         with open(data_path, "w") as f:
             f.write(new_content)
-        print(f"Applied {applied} cached rate structures to {data_path}")
+        print(f"Applied {applied} cached rate structures to {data_path}", flush=True)
     else:
         print("Usage:")
         print("  python3 ollama_carpark_agent.py --test")
